@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from dataclasses import dataclass
 
 
 class TokenType(Enum):
@@ -37,17 +38,20 @@ class TokenType(Enum):
 
     # aqui onde sera definido os tokens, como palavras reservadas, operadores, etc.
 
+
+@dataclass
 class Token:
-    def __init__(self, type_, lexeme, literal=None, line=1):
-        self.type = type_
-        self.lexeme = lexeme
-        self.literal = literal
-        self.line = line
+    type: TokenType
+    lexeme: str
+    literal: object = None
+    line: int = 1
 
     def __str__(self):
         return f"{self.type.name} {self.lexeme} {self.literal}"
 
+
 # classe token, que representa cada token encontrado no código fonte, com seu tipo, lexema, valor literal e número da linha onde foi encontrado.
+
 
 class Lexer:
     def __init__(self, source):
@@ -57,7 +61,7 @@ class Lexer:
         self.current = 0
         self.line = 1
 
-        # definese source e inicializa as variáveis necessárias para o processo de análise léxica, como a lista de tokens, os índices de início e fim do token atual e o número da linha. 
+        # definese source e inicializa as variáveis necessárias para o processo de análise léxica, como a lista de tokens, os índices de início e fim do token atual e o número da linha.
 
     def scan_tokens(self):
         while not self.is_at_end():
@@ -66,23 +70,23 @@ class Lexer:
 
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
         return self.tokens
-    
+
     # funcao que percorre o código fonte, chamando o método scan_token para cada token encontrado, até chegar ao final do arquivo. No final, adiciona um token EOF para indicar o fim do arquivo.
 
     def is_at_end(self):
         return self.current >= len(self.source)
-    
+
     # : funcao que verifica se o índice atual ultrapassou o comprimento do código fonte, indicando que chegamos ao final do arquivo.
 
     def advance(self):
         char = self.source[self.current]
         self.current += 1
         return char
-    
+
     # aqui onde o método advance é responsável por avançar o índice atual e retornar o caractere correspondente, permitindo que o lexer percorra o código fonte.
 
     def add_token(self, type_, literal=None):
-        text = self.source[self.start:self.current]
+        text = self.source[self.start : self.current]
         self.tokens.append(Token(type_, text, literal, self.line))
 
         # adiciona um token à lista de tokens, criando uma instância da classe Token com o tipo, lexema, valor literal e número da linha correspondentes.
@@ -104,14 +108,14 @@ class Lexer:
             self.line += 1
         else:
             raise Exception(f"Caractere inesperado na linha {self.line}: {char}")
-        
+
         # valida se o caractere atual é uma letra ou um sublinhado, indicando o início de um identificador ou palavra reservada, ou se é um dígito, indicando o início de um número. Também verifica se o caractere é um operador ou separador, ou se é um espaço em branco ou nova linha, e trata cada caso adequadamente. Se encontrar um caractere inesperado, lança uma exceção.
 
     def number(self):
         while not self.is_at_end() and self.source[self.current].isdigit():
             self.advance()
 
-        text = self.source[self.start:self.current]
+        text = self.source[self.start : self.current]
         self.add_token(TokenType.NUMBER, int(text))
 
         # define o método number, que percorre os dígitos do número, avançando o índice atual até encontrar um caractere que não seja um dígito. Em seguida, extrai o texto correspondente ao número e adiciona um token do tipo NUMBER à lista de tokens, com o valor literal convertido para inteiro.
@@ -122,7 +126,7 @@ class Lexer:
         ):
             self.advance()
 
-        text = self.source[self.start:self.current]
+        text = self.source[self.start : self.current]
 
         if text == "var":
             self.add_token(TokenType.VAR)
