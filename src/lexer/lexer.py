@@ -59,7 +59,7 @@ class Lexer:
 
         # definese source e inicializa as variáveis necessárias para o processo de análise léxica, como a lista de tokens, os índices de início e fim do token atual e o número da linha. 
 
-    def scan_tokens(self):
+    def scanear_tokens(self):
         while not self.is_at_end():
             self.start = self.current
             self.scan_token()
@@ -69,17 +69,17 @@ class Lexer:
     
     # funcao que percorre o código fonte, chamando o método scan_token para cada token encontrado, até chegar ao final do arquivo. No final, adiciona um token EOF para indicar o fim do arquivo.
 
-    def is_at_end(self):
+    def se_fim(self):
         return self.current >= len(self.source)
     
     # : funcao que verifica se o índice atual ultrapassou o comprimento do código fonte, indicando que chegamos ao final do arquivo.
 
-    def advance(self):
+    def avancar(self):
         char = self.source[self.current]
         self.current += 1
         return char
     
-    # aqui onde o método advance é responsável por avançar o índice atual e retornar o caractere correspondente, permitindo que o lexer percorra o código fonte.
+    # aqui onde o método avancar é responsável por avançar o índice atual e retornar o caractere correspondente, permitindo que o lexer percorra o código fonte.
 
     def add_token(self, type_, literal=None):
         text = self.source[self.start:self.current]
@@ -88,7 +88,7 @@ class Lexer:
         # adiciona um token à lista de tokens, criando uma instância da classe Token com o tipo, lexema, valor literal e número da linha correspondentes.
 
     def scan_token(self):
-        char = self.advance()
+        char = self.avancar()
 
         if char.isalpha() or char == "_":
             self.identifier()
@@ -108,8 +108,8 @@ class Lexer:
         # valida se o caractere atual é uma letra ou um sublinhado, indicando o início de um identificador ou palavra reservada, ou se é um dígito, indicando o início de um número. Também verifica se o caractere é um operador ou separador, ou se é um espaço em branco ou nova linha, e trata cada caso adequadamente. Se encontrar um caractere inesperado, lança uma exceção.
 
     def number(self):
-        while not self.is_at_end() and self.source[self.current].isdigit():
-            self.advance()
+        while not self.se_fim() and self.source[self.current].isdigit():
+            self.avancar()
 
         text = self.source[self.start:self.current]
         self.add_token(TokenType.NUMBER, int(text))
@@ -117,10 +117,10 @@ class Lexer:
         # define o método number, que percorre os dígitos do número, avançando o índice atual até encontrar um caractere que não seja um dígito. Em seguida, extrai o texto correspondente ao número e adiciona um token do tipo NUMBER à lista de tokens, com o valor literal convertido para inteiro.
 
     def identifier(self):
-        while not self.is_at_end() and (
+        while not self.se_fim() and (
             self.source[self.current].isalnum() or self.source[self.current] == "_"
         ):
-            self.advance()
+            self.avancar()
 
         text = self.source[self.start:self.current]
 
