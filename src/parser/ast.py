@@ -11,11 +11,10 @@ class Expr(ABC):
 
 @dataclass(frozen=True)
 class Binary(Expr):
-    # Expressão binária com um operando à esquerda, um operador e um operando à direita.
-    # Exemplo: 1 + 2
     left: Expr
     operator: "Token"
     right: Expr
+    # operador binário, como +, -, *, /, etc., que tem um operando à esquerda e outro à direita.
 
 
 @dataclass(frozen=True)
@@ -37,15 +36,14 @@ class Grouping(Expr):
     # Expressão agrupada entre parênteses para definir precedência.
     expression: Expr
     
-@dataclass(frozen=True)    
-class  definirAST():
+@dataclass(frozen=True)
+class definirAST:
     expression: Expr
     print: Expr
 
 @dataclass(frozen=True)
-class identificadorVariavel():
+class identificadorVariavel:
     expression: Expr
     print: Expr
-
 
 
