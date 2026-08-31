@@ -35,11 +35,43 @@ class Literal(Expr):
 class Grouping(Expr):
     # Expressão agrupada entre parênteses para definir precedência.
     expression: Expr
-    
+
+
+# classe onde trataremos a statement, praticamente na arvore sintatica, as
+# statements possuem o papel de representar uma acao a ser executada
+class stmt:
+    pass
+
+
 @dataclass(frozen=True)
-class definirAST:
+class Expressao:
     expression: Expr
-    print: Expr
+
+
+# expressao produz valor
+
+
+@dataclass(frozen=True)
+class Print:
+    expression: Expr
+
+
+# aqui ele pega o valor da expressao e faz alguma coisa
+
+# exemplo de leitura de uma expressao
+# IfStatement
+# ├── condition
+# │   └── BinaryExpression (>)
+# │       ├── x
+# │       └── 10
+# └── body
+#    └── AssignmentStatement
+#        ├── x
+#        └── 20
+
+
+# statements = estado
+
 
 @dataclass(frozen=True)
 class identificadorVariavel:
@@ -47,3 +79,16 @@ class identificadorVariavel:
     print: Expr
 
 
+# neste ponto, a declaracao e adicionada varivavel como filho percetencte a familha
+class Declaracao:
+    pass
+
+
+@dataclass(frozen=True)
+class Var(Declaracao):
+    name: Token
+    initializer: Expr | None
+
+
+##(aviso) nao e apenas um no na AST, mas sim apenas uma regra gramatical.
+# AST continua organizada em STMT
