@@ -126,5 +126,15 @@ class Interpretador:
     #converte o valor resultante da avaliação em uma string, seguindo as
     #convenções da linguagem: None vira "nil", booleanos ficam em
     #minúsculo ("true"/"false") e números com .0 perdem a casa decimal.
-    
-        
+
+
+#visitar a condicao se, se eciste a conditcao dentro do statement  
+# visita se a condicao for verdadeira
+  
+    def visitar_se(self, stmt):
+        condition = self.avaliar(stmt.condition)
+        if self.seVerdadeiro(condition):
+            self.executar(stmt.entao)
+
+        elif stmt.senao is not None:
+            self.executar(stmt.senao)

@@ -38,6 +38,22 @@ class TokenType(Enum):
 
     # aqui onde sera definido os tokens, como palavras reservadas, operadores, etc.
 
+    SE = auto()
+
+    #define token da paralvra reservada para se  (if)
+
+    SENAO = auto()
+
+    #define token da palavra senao (if)
+
+    FACA = auto()
+
+    #define token para faca (do)
+
+    ENQUANTO = auto()
+
+    #define token para enquanto enquanto (while)
+
 
 @dataclass
 class Token:

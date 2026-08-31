@@ -2,6 +2,7 @@ import types
 from xmlrpc.client import Binary
 from compiler_project.src.lexer.lexer import TokenType
 from compiler_project.src.utils.errors import parserError
+from compiler_project.src.parser.ast import Expr
 
 class Parser:   
     def __init__(self, tokens):
@@ -60,7 +61,7 @@ class Parser:
         
         return self.espiar().type in types
     
-    def parser_math(self):
+    def parser_math(self, *types):
        # Tenta parsear uma expressão matemática.
        # Implementação atual: percorre a coleção `types` em busca de um tipo
        # correspondente e, se encontrado, avança e retorna True.
@@ -107,10 +108,10 @@ class Parser:
         name = self.costume(TokenType.IDENTIFIER, "Esperado um identificador após a palavra reservada 'var'.")
         self.costume(TokenType.EQUAL, "Esperado '=' após o identificador.")
 
-        inicializador = self.expression()   
+        inicializador = self.expressao()   
         self.costume(TokenType.SEPARATOR, "Esperado ';' após a declaração da variável.")
 
-        return self.varDeclaration(name, inicializador)
+        return Var(name, inicializador)
   
     def termo(self):
         # Parseia um termo numa expressão combinando fatores com operadores.
@@ -161,16 +162,44 @@ class Parser:
 
     def expressoes_estado(self):
         #expressao tambem recebe um valor e retorna um erro de parser vindo do costume
-        Expr = self.expression()
+        Expr = self.expressao()
         self.costume(TokenType.SEPARATOR, "Esperado ';' depois desse valor")
         return print(Expr)
 
+
+        
+#temos aqui a funcao cuja retorna a declaracao da variavel
     def declaracao(self):
         if self.verificar_fim(TokenType.VAR):
             return self.declaracao_variavel()
+
+        if self.verificar_fim(TokenType.SE):
+            return self.declaracao_se()
         return self.estado()
 
+    def primary(self):
+        if self.parser_math(TokenType.IDENTIFIER):
+            return Variable(self.anterior())
+        
+#declaracao do SE, validando a sintaxe com os erros de esperado
+#retorna os valores de entao, senao e condicao
 
-    
-    
+    def delcaracao_se(self):
+        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'SE' ).")
 
+        condition = self.expressao()
+
+        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'condicao'.")
+
+        entao = self.declaracao()
+
+        senao = None
+
+        if self.parser_math(TokenType.SENAO):
+            senao = self.declaracao()
+
+            return Se(
+            condition,
+            entao,
+            senao
+        )
