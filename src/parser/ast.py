@@ -87,13 +87,7 @@ class ExpressaoStatement(Declaracao):
 
 
 # statements = estado
-
-
-
-
 # neste ponto, a declaracao e adicionada varivavel como filho percetencte a familha
-
-
 # expressao produz valor
 
 #printa na tela print;
@@ -115,7 +109,6 @@ class Print(Declaracao):
 
 #declaracao de variavel 
 #var x = 10;
-
 @dataclass(frozen=True)
 class Var(Declaracao):
     name: Token
@@ -140,10 +133,21 @@ class Se(Declaracao):
     entao: Declaracao
     senao : Declaracao | None
 
-    # bloco se e senao
+# bloco se e senao
 
 @dataclass(frozen=True)
 class Enquanto(Declaracao):
     condition: Expr
     body: Declaracao
-#bloco de while
+#bloco de while (nesse caso apenas o uso do while isolado)
+
+#bloco do do e while, agora com a condicao no final, diferente do while que tem a condicao no inicio)
+@dataclass(frozen=True)
+class Faca_enquanto(Declaracao):
+    body: Declaracao
+    condition: Expr
+
+
+#STATEMENTS DE VARIAVEIS GLOBAIS E LOCAIS
+
+

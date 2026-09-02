@@ -2,7 +2,7 @@ import types
 from xmlrpc.client import Binary
 from compiler_project.src.lexer.lexer import TokenType
 from compiler_project.src.utils.errors import parserError
-from compiler_project.src.parser.ast import Expr
+from parser.ast import Se, Var, Variable, Expr
 
 class Parser:   
     def __init__(self, tokens):
@@ -70,7 +70,7 @@ class Parser:
            if self.verificar_fim(type_):
                self.avancar()
                return True
-           return False
+       return False
     
     def costume(self, type_, message):
         # Consume um token do tipo esperado ou lança `parserError`.
@@ -96,8 +96,7 @@ class Parser:
 
     def expressao(self):  
         # Ponto de entrada para parsear uma expressão; delega para `parser_math`.
-
-        return self.parser_math() 
+        return self.termo() 
 
     def declaracao_variavel(self):
         # Parseia uma declaração de variável.
@@ -151,7 +150,7 @@ class Parser:
     #retorna toda a construcao da lista statement
 
     def mostrar_estado(self):
-        #valor da expresssao e chamado
+        #valor da expressao e chamado
         #funcao costume retornando um erro de parser
         value = self.expressao()
         self.costume(
@@ -169,22 +168,50 @@ class Parser:
 
         
 #temos aqui a funcao cuja retorna a declaracao da variavel
+#Necessario realizar a funcao de verificar fim para todos os tipos de tokens que podem ser declarados, como variavel, se, senao, enquanto e faca enquanto
+
     def declaracao(self):
         if self.verificar_fim(TokenType.VAR):
             return self.declaracao_variavel()
 
         if self.verificar_fim(TokenType.SE):
             return self.declaracao_se()
+
+        if self.verificar_fim(TokenType.ENQUANTO):
+            return self.declaracao_enquanto()
+
+        if self.verificar_fim(TokenType.FACA):
+            return self.declaracao_faca_enquanto()
         return self.estado()
 
     def primary(self):
         if self.parser_math(TokenType.IDENTIFIER):
             return Variable(self.anterior())
         
+        #regra de atribuicao de valor em uma variavel, caso o token seja do tipo IDENTIFIER, ele retorna a variavel com o valor do token anterior
+    def atribuicao_varivavel(self):
+        #chama a funcao expressao para pegar o valor da expressao e verificar os tokens
+        Expr = self.expressao()
+#se o token for do tipo equal, ele retorna o valor do token anterior e o valor da expressao, se for variavel, ele retorna o nome e o valor, 
+#caso no seja valor da variavel, ele retorna um erro de parser, informando que a atribuicao de valor pode ser feita apenas em variaveis declaradas
+        if self.parser_math(TokenType.EQUAL):
+            equals = self.anterior()
+            value = self.atribuicao_variavel()
+# a funcao isinstance verifica se o objeto Expr é uma instância da classe Variable, ou seja, se Expr representa uma variável. Se for verdadeiro, 
+# ele cria e retorna um objeto Var com o nome da variável, o valor atribuído e o token de igualdade. Caso contrário, 
+# ele levanta um erro de parser informando que a atribuição de valor só pode ser feita em variáveis declaradas.
+            if isinstance(Expr, Variable):
+                return Var(Expr.name, value, equals)
+
+            raise parserError(equals.line, "atribuicao de valor pode ser feita apenas em variavies declaradas")
+#retorna toda expressao 
+        return Expr
+
+
 #declaracao do SE, validando a sintaxe com os erros de esperado
 #retorna os valores de entao, senao e condicao
 
-    def delcaracao_se(self):
+    def declaracao_se(self):
         self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'SE' ).")
 
         condition = self.expressao()
@@ -203,3 +230,46 @@ class Parser:
             entao,
             senao
         )
+#declaracao do ENQUANTO, validando a sintaxe com os erros de esperado
+
+    def declaracao_enquanto(self):
+        self.costume(TokenType.ENQUANTO, "Esperado 'ENQUANTO'.")
+
+        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'ENQUANTO'.")
+
+        condition = self.expressao()
+
+        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'CONDICAO'.")
+
+        enquanto = self.declaracao()
+
+        return enquanto(
+                condition,
+                enquanto
+            )
+    
+#declaracao do FACA ENQUANTO, agora eles precisam existir ao mesmo tempo 
+    def declaracao_faca_enquanto(self):
+        self.costume(TokenType.FACA, "Esperado FAC A depois de 'FACA'.")
+
+        faca_enquanto = self.declaracao()
+
+
+        self.costume(TokenType.ENQUANTO, "Esperado ENQUANTO depois de  FACA.")
+
+
+        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'ENQUANTO'.")
+
+        condition = self.expressao()
+
+        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'CONDICAO'.")
+
+
+        return faca_enquanto(
+                faca_enquanto,
+                condition
+        )
+
+    
+
+
