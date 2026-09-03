@@ -12,3 +12,10 @@ class runtimeError(Exception):
         self.line = line
         self.message = message
         super().__init__(f"Erro de execução na linha {line}: {message}")
+
+class semanticError(Exception):
+
+    def __init__(self, line, message):
+        self.line = line
+        self.message = message
+        super().__init__(f"Erro semântico na linha {line}: {message}")

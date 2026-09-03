@@ -112,6 +112,7 @@ class Print(Declaracao):
 @dataclass(frozen=True)
 class Var(Declaracao):
     name: Token
+    #incializador da valor inicial a uma variavel, caso nao seja declarado, o valor da variavel sera None
     initializer: Expr | None
 
 ##(aviso) nao e apenas um no na AST, mas sim apenas uma regra gramatical.
