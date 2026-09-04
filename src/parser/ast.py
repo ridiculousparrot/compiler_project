@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from abc import ABC
+import token
 from compiler_project.src.lexer.lexer import Token, TokenType
 
 
@@ -148,6 +149,19 @@ class Faca_enquanto(Declaracao):
     body: Declaracao
     condition: Expr
 
+#uma funcao em programacao significa um bloco de código que realiza uma tarefa específica e pode ser reutilizado em diferentes partes do programa. 
+#a classe funcao representa a declaracao de uma funcao, corpo, nome e lista de parametros, que podem ser passados de funcao para funcao
+@dataclass(frozen=True)
+class funcao(Declaracao):
+      body: Declaracao
+      name:token
+      list_param: list[Token]
+
+#retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor
+@dataclass(frozen=True)
+class retorno(Declaracao):
+      value: Expr | None
+    
 
 #STATEMENTS DE VARIAVEIS GLOBAIS E LOCAIS
 

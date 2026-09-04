@@ -270,6 +270,54 @@ class Parser:
                 condition
         )
 
-    
 
+#relativamente, essa foi a funcao mais complexa de se fazer,
+#a funcao declaracao funcao, vai trabalhar com os devidos tokens, funcao, parametro identificador, parenteses esquerdo e direito, 
+# chaves esquerdo e direito, e vai retornar a funcao com o nome, parametros e corpo da funcao
+    def declaracao_funcao(self):
+
+        self.costume(TokenType.FUNCAO, "Esperado 'FUNCAO',")
+
+        name = self.costume(TokenType.IDENTIFIER, "Esperado um identificador depois de 'funcao'.")
+
+        self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'FUNCAO'.")
+
+#parametros nao sao obrigatorios, caso nao seja declarado, a lista de parametros sera vazia
+        parametros = []
+
+#mas no caso se for declarado, ele vai verificar 
+# se o token e diferente de parenteses 
+# direito, caso seja diferente, ele vai adicionar o parametro na lista de parametros
+        if not self.verificar(TokenType.PARENTESES_DIREITO):
+            parametros.append(
+            self.consumir(
+                TokenType.IDENTIFICADOR,
+                "Esperado nome do parâmetro."
+            )
+        )
+#virgula para separar os parametros, caso tenha mais de um, e vai adicionar na lista de parametros soma(a, b) exemplo
+        while self.corresponde(TokenType.VIRGULA):
+            parametros.append(
+                self.consumir(
+                    TokenType.IDENTIFICADOR,
+                    "Esperado nome do parâmetro."
+                )
+            )
+#chama tokens da funcao, parenteses e chaves
+        self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' depois de 'FUNCAO'.")
+
+        self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de 'FUNCAO'.")
+#o corpo de uma funcao nao necessariamente precisa ter um valor, caso tenha recebera uma lista vazia
+        corpo = []
+#enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
+
+        while not self.verificar(TokenType.CHAVES_DIREITO) and not self.fim():
+             corpo.append(self.declaracao())
+#token de fechar token
+        self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de 'FUNCAO'.")
+#retorna a funcao com o nome, parametros e corpo da funcao
+        return Funcao(
+            name, 
+            parametros, 
+            corpo)
 

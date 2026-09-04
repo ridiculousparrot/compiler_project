@@ -163,3 +163,15 @@ class Interpretador:
             self.executar(stmt.body)
             if not self.seVerdadeiro(self.avaliar(stmt.condition)):
                 break 
+
+    def visitar_funcao(self, stmt):
+        #aqui a funcao vai retornar o valor da funcao, que pode ser None caso a expressao digitada nao tenha valor
+        return stmt
+
+#regra de retur, define valor de retorno = nulo, se o valor do statemnt nao for nulo, ele avalia noamente o valor da statement, e retorna 
+# o valor da expressao digitada, caso nao tenha valor, retorna nulo
+    def visitar_retorno(self, stmt):
+        value = None
+        if stmt.value is not None:
+            value = self.avaliar(stmt.value)
+        return value

@@ -5,20 +5,16 @@ from dataclasses import dataclass
 class TokenType(Enum):
     # Palavra reservada para declaração de variáveis.
     # Exemplo: var x = 10;
-    VAR = auto()
-
-    # Palavra reservada para estruturas condicionais.
-    # Exemplo: if (x > 10)
-    IF = auto()
+    VARIAVEL = auto()
 
     # Nome dado pelo programador para variáveis,
     # funções, classes, etc.
     # Exemplos: x, contador, soma, minhaFuncao
-    IDENTIFIER = auto()
+    IDENTIFICADOR = auto()
 
     # Valores numéricos.
     # Exemplos: 10, 3.14, 42
-    NUMBER = auto()
+    NUMERO = auto()
 
     # Cadeias de caracteres delimitadas por aspas.
     # Exemplos: "Olá Mundo", "Pedro"
@@ -26,11 +22,11 @@ class TokenType(Enum):
 
     # Operadores da linguagem.
     # Exemplos: +, -, *, /, =, ==, !=, <, >
-    OPERATOR = auto()
+    OPERADORES = auto()
 
     # Símbolos que organizam a sintaxe.
     # Exemplos: ; , ( ) { } [ ]
-    SEPARATOR = auto()
+    SEPARADORES = auto()
 
     # Marca o final do arquivo ou entrada.
     # Facilita o parser saber quando encerrar a análise.
@@ -53,6 +49,70 @@ class TokenType(Enum):
     ENQUANTO = auto()
 
     #define token para enquanto enquanto (while)
+
+    #define token para funcao (function)
+    FUNCAO = auto()
+
+    #define token para return (return)
+    RETORNO = auto()
+
+
+    #define token do switrch case (case), ou seja, trocar
+    TROCAR = auto()
+
+    #define token do break, ou seja, quebrar o fluxo de execucao do switch case
+    QUEBRAR = auto()
+
+
+#SEPARADORES, como ; , ( ) { } [ ]
+
+    #define token para abre parenteses direita )
+    PARENTESES_DIREITO = auto()
+    #define token para abre parenteses esquerda (
+    PARENTESES_ESQUERDO = auto()
+    #chaves para definir blocos de código, como em arrays ou listas.
+    CHAVES_ESQUERDO = auto()
+    #chaves para definir blocos de código, como em arrays ou listas.
+    CHAVES_DIREITO = auto()
+    #colchetes para definir blocos de código, como em arrays ou listas.
+    COLCHETES_ESQUERDO = auto()
+    #colchetes para definir blocos de código, como em arrays ou listas.
+    COLCHETES_DIREITO = auto()
+    #virgula para separar elementos em listas, arrays ou parâmetros de funções.
+    VIRGULA = auto()
+
+
+    
+
+
+#tokens de operadores, como +, -, *, /, =, ==, !=
+
+    MAIS = auto()
+
+    MENOS = auto()
+
+    MULTIPLICACAO = auto()
+
+    BARRA = auto()
+
+    ESTRELA = auto()
+
+    MAIOR = auto()
+
+    MAIOR_IGUAL = auto()
+
+    MENOR = auto()
+
+    MENOR_IGUAL = auto()
+
+    IGUAL_OUTRO = auto()
+
+    IGUAL_IGUAL = auto()
+
+    DIFERENTE = auto()
+
+    
+
 
 
 @dataclass
@@ -80,7 +140,7 @@ class Lexer:
         # definese source e inicializa as variáveis necessárias para o processo de análise léxica, como a lista de tokens, os índices de início e fim do token atual e o número da linha.
 
     def scanear_tokens(self):
-        while not self.is_at_end():
+        while not self.se_fim():
             self.start = self.current
             self.scan_token()
 
@@ -114,10 +174,40 @@ class Lexer:
             self.identifier()
         elif char.isdigit():
             self.number()
-        elif char in ["+", "-", "*", "/", "=", "!", "<", ">"]:
-            self.add_token(TokenType.OPERATOR)
-        elif char in ["(", ")", "{", "}", "[", "]", ";", ","]:
-            self.add_token(TokenType.SEPARATOR)
+        elif char == "+":
+            self.add_token(TokenType.MAIS)
+        elif char == "-":
+            self.add_token(TokenType.MENOS)
+        elif char == "*":
+            self.add_token(TokenType.MULTIPLICACAO)
+        elif char == "/":
+            self.add_token(TokenType.BARRA)
+        elif char == "!=":
+            self.add_token(TokenType.DIFERENTE)
+        elif char == "==":
+            self.add_token(TokenType.IGUAL_IGUAL)
+        elif char == "=":
+            self.add_token(TokenType.IGUAL_OUTRO)
+        elif char == ">":
+            self.add_token(TokenType.MAIOR)
+        elif char == ">=":
+            self.add_token(TokenType.MAIOR_IGUAL)
+        elif char == "<":
+            self.add_token(TokenType.MENOR)
+        elif char == "<=":
+            self.add_token(TokenType.MENOR_IGUAL)
+        elif char == '"':
+            self.string()
+        elif char == ",":
+            self.add_token(TokenType.VIRGULA)
+        elif char in ["(", ")"]:
+            self.add_token(TokenType.PARENTESES_ESQUERDO if char == "(" else TokenType.PARENTESES_DIREITO)
+        elif char in ["{", "}"]:
+            self.add_token(TokenType.CHAVES_ESQUERDO if char == "{" else TokenType.CHAVES_DIREITO)
+        elif char in ["[", "]"]:
+            self.add_token(TokenType.COLCHETES_ESQUERDO if char == "[" else TokenType.COLCHETES_DIREITO)
+        elif char in ["{", "}", "[", "]", ";", ","]:
+            self.add_token(TokenType.SEPARADORES)
         elif char in [" ", "\r", "\t"]:
             pass
         elif char == "\n":
@@ -132,7 +222,7 @@ class Lexer:
             self.avancar()
 
         text = self.source[self.start : self.current]
-        self.add_token(TokenType.NUMBER, int(text))
+        self.add_token(TokenType.NUMERO, int(text))
 
         # define o método number, que percorre os dígitos do número, avançando o índice atual até encontrar um caractere que não seja um dígito. Em seguida, extrai o texto correspondente ao número e adiciona um token do tipo NUMBER à lista de tokens, com o valor literal convertido para inteiro.
 
@@ -145,11 +235,25 @@ class Lexer:
         text = self.source[self.start : self.current]
 
         if text == "var":
-            self.add_token(TokenType.VAR)
-        elif text == "if":
-            self.add_token(TokenType.IF)
+            self.add_token(TokenType.VARIAVEL)
+        elif text == "se":
+            self.add_token(TokenType.SE)
+        elif text == "senao":
+            self.add_token(TokenType.SENAO)
+        elif text == "faca":
+            self.add_token(TokenType.FACA)
+        elif text == "enquanto":
+            self.add_token(TokenType.ENQUANTO)
+        elif text == "funcao":
+            self.add_token(TokenType.FUNCAO)
+        elif text == "retorno":
+            self.add_token(TokenType.RETORNO)
+        elif text == "ain_talon":
+            self.add_token(TokenType.QUEBRAR)
+        elif text == "trocar":
+            self.add_token(TokenType.TROCAR)
         else:
-            self.add_token(TokenType.IDENTIFIER)
+            self.add_token(TokenType.IDENTIFICADOR)
 
             # define o indentificador, que percorre os caracteres alfanuméricos e sublinhados, avançando o índice atual até encontrar um caractere que não seja válido para um identificador. Em seguida, extrai o texto correspondente ao identificador e verifica se é uma palavra reservada (como "var" ou "if"), adicionando o token correspondente à lista de tokens. Se não for uma palavra reservada, adiciona um token do tipo IDENTIFIER.
 
