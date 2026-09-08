@@ -2,7 +2,7 @@ import types
 from xmlrpc.client import Binary
 from compiler_project.src.lexer.lexer import TokenType
 from compiler_project.src.utils.errors import parserError
-from parser.ast import Se, Var, Variable, Expr
+from parser.ast import Bloco, Faca_enquanto, Se, Var, Variable, Expr, funcao, Enquanto, Declaracao
 
 class Parser:   
     def __init__(self, tokens):
@@ -243,7 +243,7 @@ class Parser:
 
         enquanto = self.declaracao()
 
-        return enquanto(
+        return Enquanto(
                 condition,
                 enquanto
             )
@@ -265,7 +265,7 @@ class Parser:
         self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'CONDICAO'.")
 
 
-        return faca_enquanto(
+        return Faca_enquanto(
                 faca_enquanto,
                 condition
         )
@@ -312,12 +312,12 @@ class Parser:
 #enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
 
         while not self.verificar(TokenType.CHAVES_DIREITO) and not self.fim():
-             corpo.append(self.declaracao())
+             Bloco.append(self.declaracao())
 #token de fechar token
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de 'FUNCAO'.")
 #retorna a funcao com o nome, parametros e corpo da funcao
-        return Funcao(
+        return funcao(
             name, 
             parametros, 
-            corpo)
-
+            Bloco)
+    

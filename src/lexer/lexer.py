@@ -62,7 +62,7 @@ class TokenType(Enum):
 
     #define token do break, ou seja, quebrar o fluxo de execucao do switch case
     QUEBRAR = auto()
-
+    
 
 #SEPARADORES, como ; , ( ) { } [ ]
 
@@ -83,8 +83,6 @@ class TokenType(Enum):
 
 
     
-
-
 #tokens de operadores, como +, -, *, /, =, ==, !=
 
     MAIS = auto()
@@ -115,6 +113,7 @@ class TokenType(Enum):
 
 
 
+# classe token, que representa cada token encontrado no código fonte, com seu tipo, lexema, valor literal e número da linha onde foi encontrado.
 @dataclass
 class Token:
     type: TokenType
@@ -125,8 +124,6 @@ class Token:
     def __str__(self):
         return f"{self.type.name} {self.lexeme} {self.literal}"
 
-
-# classe token, que representa cada token encontrado no código fonte, com seu tipo, lexema, valor literal e número da linha onde foi encontrado.
 
 
 class Lexer:

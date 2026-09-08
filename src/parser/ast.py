@@ -155,7 +155,7 @@ class Faca_enquanto(Declaracao):
 class funcao(Declaracao):
       body: Declaracao
       name:token
-      list_param: list[Token]
+      body: Bloco
 
 #retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor
 @dataclass(frozen=True)
