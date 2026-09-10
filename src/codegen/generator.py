@@ -58,11 +58,35 @@ class codegen:
 
         raise TypeError(f"No nao suportado: {type(no).__name__}")
 
+#+, -, *, /, =, ==, !=, >, >=. <=, !=
     def gerar_binary(self, no):
-        direita = self.gerar_resposta(no.left)
-        esquerda = self.gerar_resposta(no.right)
+        esquerda = self.gerar_resposta(no.left)
+        direita = self.gerar_resposta(no.right)
 
-        return no 
+        if no.operador == "+":
+            self.emit("ADICAO")
+        elif no.operador =="-":
+            self.emit("SUBTRACAO")
+        elif no.operador == '*':
+            self.emit("MULTIPLICACAO")
+        elif no.operador =="/":
+            self.emit("DIVISAO")
+        elif no.operador == "!=":
+            self.emit("DIFERENTE")
+        elif no.operador == "<=":
+            self.emit("MENOR_IGUAL")
+        elif no.operador == ">=":
+            self.emit("MAIOR_IGUAL")
+        elif no.operador == "=":
+            self.emit("IGUAL_OUTRO")
+        elif no.operador == "==":
+            self.emit("IGUAL_IGUAL")
+        elif no.operador == ">":
+            self.emit("MAIOR")
+        elif no.operador == "<":
+            self.emit("MENOR")
+
+        return None
 
     def gerar_unario(self, no):
         direta = self.gerar_resposta(no.right)

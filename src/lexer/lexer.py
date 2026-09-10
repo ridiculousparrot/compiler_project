@@ -81,9 +81,11 @@ class TokenType(Enum):
     #virgula para separar elementos em listas, arrays ou parâmetros de funções.
     VIRGULA = auto()
 
+    PRINT = auto()
+
 
     
-#tokens de operadores, como +, -, *, /, =, ==, !=
+#tokens de operadores, como +, -, *, /, =, ==, !=, >, <, >=, <=, !=
 
     MAIS = auto()
 
@@ -92,8 +94,6 @@ class TokenType(Enum):
     MULTIPLICACAO = auto()
 
     BARRA = auto()
-
-    ESTRELA = auto()
 
     MAIOR = auto()
 
@@ -249,6 +249,8 @@ class Lexer:
             self.add_token(TokenType.QUEBRAR)
         elif text == "trocar":
             self.add_token(TokenType.TROCAR)
+        elif text == "print":
+            self.add_token(TokenType.PRINT)
         else:
             self.add_token(TokenType.IDENTIFICADOR)
 

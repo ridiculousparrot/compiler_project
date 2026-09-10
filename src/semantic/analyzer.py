@@ -1,5 +1,4 @@
-from compiler_project.src.lexer.lexer import TokenType
-
+from src.lexer.lexer import TokenType
 class Interpretador:
 
     #cria a classse interpretador, que é responsável por avaliar e executar as expressões da linguagem.

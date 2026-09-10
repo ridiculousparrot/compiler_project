@@ -1,8 +1,20 @@
 import types
-from xmlrpc.client import Binary
-from compiler_project.src.lexer.lexer import TokenType
-from compiler_project.src.utils.errors import parserError
-from parser.ast import Bloco, Faca_enquanto, Se, Var, Variable, Expr, funcao, Enquanto, Declaracao
+from src.lexer.lexer import TokenType
+from src.utils.errors import parserError
+from src.parser.ast import (
+    Bloco,
+    Faca_enquanto,
+    Se,
+    Var,
+    Variable,
+    Expr,
+    funcao,
+    Enquanto,
+    Declaracao,
+    Binary
+)
+
+
 
 class Parser:   
     def __init__(self, tokens):
@@ -111,19 +123,51 @@ class Parser:
         self.costume(TokenType.SEPARATOR, "Esperado ';' após a declaração da variável.")
 
         return Var(name, inicializador)
+
+# Parseia um termo numa expressão combinando fatores com operadores.
+        # Exemplo: lê um fator, então enquanto encontrar `*` ou `/` combina em uma
+        # estrutura `Binary`.
+
+    def fator(self):
+        expr = self.unario()
+
+        while self.verificar_fim(
+        TokenType.MULTIPLICACAO,
+        TokenType.BARRA
+        ):
+            operador = self.avancar()
+            direita = self.unario()
+
+            expr = Binary(
+            expr,
+            operador,
+            direita
+        )
+
+        return expr
+
+
   
     def termo(self):
         # Parseia um termo numa expressão combinando fatores com operadores.
         # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
         # estrutura `Binary`.
 
-        expr = self.factor()
+        expr = self.fator()
 
-        while self.verificar_fim(TokenType.PLUS, TokenType.MINUS): 
-            operator = self.anterior()
-            right = self.factor()
-            expr = Binary(expr, operator, right)
-        
+        while self.verificar_fim(
+        TokenType.MAIS,
+        TokenType.MENOS
+        ):
+            operador = self.avancar()
+            direita = self.fator()
+
+        expr = Binary(
+            expr,
+            operador,
+            direita
+        )
+
         return expr
 
 
@@ -145,7 +189,6 @@ class Parser:
      #retornar o valor do statement
         if self.verificar_fim(TokenType.PRINT):
             return self.mostrar_estado()
-
         return self.expressao_estado()
     #retorna toda a construcao da lista statement
 
@@ -171,7 +214,7 @@ class Parser:
 #Necessario realizar a funcao de verificar fim para todos os tipos de tokens que podem ser declarados, como variavel, se, senao, enquanto e faca enquanto
 
     def declaracao(self):
-        if self.verificar_fim(TokenType.VAR):
+        if self.verificar_fim(TokenType.VARIAVEL):
             return self.declaracao_variavel()
 
         if self.verificar_fim(TokenType.SE):
@@ -185,7 +228,7 @@ class Parser:
         return self.estado()
 
     def primary(self):
-        if self.parser_math(TokenType.IDENTIFIER):
+        if self.parser_math(TokenType.IDENTIFICADOR):
             return Variable(self.anterior())
         
         #regra de atribuicao de valor em uma variavel, caso o token seja do tipo IDENTIFIER, ele retorna a variavel com o valor do token anterior
@@ -194,7 +237,7 @@ class Parser:
         Expr = self.expressao()
 #se o token for do tipo equal, ele retorna o valor do token anterior e o valor da expressao, se for variavel, ele retorna o nome e o valor, 
 #caso no seja valor da variavel, ele retorna um erro de parser, informando que a atribuicao de valor pode ser feita apenas em variaveis declaradas
-        if self.parser_math(TokenType.EQUAL):
+        if self.parser_math(TokenType.IGUAL_OUTRO):
             equals = self.anterior()
             value = self.atribuicao_variavel()
 # a funcao isinstance verifica se o objeto Expr é uma instância da classe Variable, ou seja, se Expr representa uma variável. Se for verdadeiro, 
@@ -212,11 +255,11 @@ class Parser:
 #retorna os valores de entao, senao e condicao
 
     def declaracao_se(self):
-        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'SE' ).")
+        self.costume(TokenType.COLCHETES_ESQUERDO, "Esperado '(' depois de 'SE' ).")
 
         condition = self.expressao()
 
-        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'condicao'.")
+        self.costume(TokenType.COLCHETES_DIREITO, "Esperado ')' depois da 'condicao'.")
 
         entao = self.declaracao()
 
@@ -235,11 +278,11 @@ class Parser:
     def declaracao_enquanto(self):
         self.costume(TokenType.ENQUANTO, "Esperado 'ENQUANTO'.")
 
-        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'ENQUANTO'.")
+        self.costume(TokenType.COLCHETES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
 
         condition = self.expressao()
 
-        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'CONDICAO'.")
+        self.costume(TokenType.COLCHETES_DIREITO, "Esperado ')' depois da 'CONDICAO'.")
 
         enquanto = self.declaracao()
 
@@ -258,11 +301,11 @@ class Parser:
         self.costume(TokenType.ENQUANTO, "Esperado ENQUANTO depois de  FACA.")
 
 
-        self.costume(TokenType.LEFT_PAREN, "Esperado '(' depois de 'ENQUANTO'.")
+        self.costume(TokenType.COLCHETES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
 
         condition = self.expressao()
 
-        self.costume(TokenType.RIGHT_PAREN, "Esperado ')' depois da 'CONDICAO'.")
+        self.costume(TokenType.COLCHETES_DIREITO, "Esperado ')' depois da 'CONDICAO'.")
 
 
         return Faca_enquanto(
@@ -278,7 +321,7 @@ class Parser:
 
         self.costume(TokenType.FUNCAO, "Esperado 'FUNCAO',")
 
-        name = self.costume(TokenType.IDENTIFIER, "Esperado um identificador depois de 'funcao'.")
+        name = self.costume(TokenType.IDENTIFICADOR, "Esperado um identificador depois de 'funcao'.")
 
         self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'FUNCAO'.")
 

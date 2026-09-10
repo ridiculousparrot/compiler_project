@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from abc import ABC
-import token
-from compiler_project.src.lexer.lexer import Token, TokenType
+from abc import ABC 
+from src.lexer.lexer import Token
 
 
 
@@ -154,7 +153,7 @@ class Faca_enquanto(Declaracao):
 @dataclass(frozen=True)
 class funcao(Declaracao):
       body: Declaracao
-      name:token
+      name: Token
       body: Bloco
 
 #retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor

@@ -1,6 +1,6 @@
 from src.lexer.lexer import Lexer
 from src.parser.parser import Parser
-from src.interpreter.interpreter import Interpretador
+from src.semantic.analyzer import Interpretador
 
 
 
@@ -9,7 +9,7 @@ def main():
 
     # Lexer
     lexer = Lexer(codigo)
-    tokens = lexer.scan_tokens()
+    tokens = lexer.scanear_tokens()
 
     # Parser
     parser = Parser(tokens)
@@ -17,7 +17,7 @@ def main():
 
     # Interpretador
     interpretador = Interpretador()
-    interpretador.interpretar(statements)
+    interpretador.visitarExpressaoStmt
 
 
 if __name__ == "__main__":
