@@ -194,7 +194,7 @@ class Lexer:
         elif char == "<=":
             self.add_token(TokenType.MENOR_IGUAL)
         elif char == '"':
-            self.string()
+            self.add_token(TokenType.STRING)
         elif char == ",":
             self.add_token(TokenType.VIRGULA)
         elif char in ["(", ")"]:

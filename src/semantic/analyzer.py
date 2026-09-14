@@ -1,4 +1,5 @@
 from src.lexer.lexer import TokenType
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno
 class Interpretador:
 
     #cria a classse interpretador, que é responsável por avaliar e executar as expressões da linguagem.
@@ -8,7 +9,15 @@ class Interpretador:
 # retornando os resultados correspondentes.
 
     def avaliar(self, expr):
-        return expr.accept(self)
+        if isinstance(expr, Literal):
+            return self.visitarExpressaoLiteral(expr)
+        if isinstance(expr, Grouping):
+            return self.visitarExpressaoAgrupada(expr)
+        if isinstance(expr, Unary):
+            return self.visitarExpressaoUnaria(expr)
+        if isinstance(expr, Binary):
+            return self.visitarExpressaoBinaria(expr)
+        raise Exception(f"Tipo de expressão desconhecido: {type(expr)}")
 
     # faz com que a expressão aceite o interpretador, chamando o método apropriado para avaliar o tipo específico de expressão.
 
@@ -65,7 +74,7 @@ class Interpretador:
             case TokenType.BARRA:
                 return esquerda / direita
 
-            case TokenType.ESTRELA:
+            case TokenType.MULTIPLICACAO:
                 return esquerda * direita
 
             case TokenType.MAIOR:
@@ -92,11 +101,23 @@ class Interpretador:
 
 #funcao responsavel por executar os statements, chamando o metodo accept para que o statement aceite o interpretador e execute a ação correspondente.
     def executar(self, stmt):
-        return stmt.accept(self)
+        if isinstance(stmt, Print):
+            return self.visitarPrintStmt(stmt)
+        if isinstance(stmt, Var):
+            return self.visitar_declaracao_variavel(stmt)
+        if isinstance(stmt, Se):
+            return self.visitar_se(stmt)
+        if isinstance(stmt, Enquanto):
+            return self.visitar_enquanto(stmt)
+        if isinstance(stmt, retorno):
+            return self.visitar_retorno(stmt)
+        if isinstance(stmt, Faca_enquanto):
+            return self.visitar_faca_enquanto(stmt)
+        raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
     
 # visita a expressão de print, avaliando a expressão e imprimindo o resultado na saída padrão.
     def visitarExpressaoStmt(self,stmt):
-        self.avaliar(stmt.expression)
+        self.avaliar(stmt.expressao)
         return None
     
 #visita a  o print statement, avaliando a expressão e imprimindo o resultado na saída padrão.
@@ -108,7 +129,7 @@ class Interpretador:
 #a funcao interpretar_funcao recebe uma lista de statements e 
 # executa cada um deles chamando o método executar, permitindo que a função seja interpretada e suas ações sejam realizadas.
     def interpretar_funcao(self, stmt):
-         for statement in statements:
+         for statement in statement:
             self.executar(statement)
 
     #verifica se o valor e nulo, caso sim, retorna nulo, se for booleano, retorna o valor, caso contrario, considera o valor como verdadeiro

@@ -62,7 +62,7 @@ class Atribuicao(Expr):
 # statements possuem o papel de representar uma acao a ser executada
 @dataclass(frozen=True)
 class Declaracao(ABC):
-    pass 
+    pass
 
 # Uma expressão usada como statement:
 #
@@ -152,9 +152,9 @@ class Faca_enquanto(Declaracao):
 #a classe funcao representa a declaracao de uma funcao, corpo, nome e lista de parametros, que podem ser passados de funcao para funcao
 @dataclass(frozen=True)
 class funcao(Declaracao):
-      body: Declaracao
-      name: Token
       body: Bloco
+      name: Token
+      parametros: list
 
 #retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor
 @dataclass(frozen=True)

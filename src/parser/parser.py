@@ -11,7 +11,13 @@ from src.parser.ast import (
     funcao,
     Enquanto,
     Declaracao,
-    Binary
+    Binary,
+    Unary,
+    Print,
+    Literal,
+    Grouping,
+    ExpressaoStatement,
+    retorno
 )
 
 
@@ -90,10 +96,10 @@ class Parser:
         # - type_: tipo de token esperado.
         # - message: mensagem de erro caso o token não seja o esperado.
 
-        if self.verificar_fim(type_):
-            return self.avancar()
+            if self.verificar_fim(type_):
+                return self.avancar()
         
-        raise parserError(self.espiar().line, message)
+            raise parserError(self.espiar().line, message)
     
     def parser_gram(self):
         # Parseia a gramática de nível superior e retorna uma lista de statements.
@@ -108,43 +114,78 @@ class Parser:
 
     def expressao(self):  
         # Ponto de entrada para parsear uma expressão; delega para `parser_math`.
-        return self.termo() 
+        return self.adicao() 
 
     def declaracao_variavel(self):
         # Parseia uma declaração de variável.
         # Fluxo esperado: identifica o nome, o operador de atribuição, a expressão inicializadora
-        # e o separador (`;`). A implementação atual retorna uma chamada recursiva,
         # portanto é um placeholder que precisa ser ajustado para construir o nó AST.
+        self.costume(TokenType.VARIAVEL, "Esperado uma variavel()")
+        name = self.costume(TokenType.IDENTIFICADOR, "Esperado um identificador após a palavra reservada 'var'.")
+        self.costume(TokenType.IGUAL_OUTRO, "Esperado '=' após o identificador.")
 
-        name = self.costume(TokenType.IDENTIFIER, "Esperado um identificador após a palavra reservada 'var'.")
-        self.costume(TokenType.EQUAL, "Esperado '=' após o identificador.")
+        initializer = self.expressao()   
 
-        inicializador = self.expressao()   
-        self.costume(TokenType.SEPARATOR, "Esperado ';' após a declaração da variável.")
-
-        return Var(name, inicializador)
+        return Var(name, initializer)
 
 # Parseia um termo numa expressão combinando fatores com operadores.
         # Exemplo: lê um fator, então enquanto encontrar `*` ou `/` combina em uma
         # estrutura `Binary`.
 
-    def fator(self):
-        expr = self.unario()
-
-        while self.verificar_fim(
-        TokenType.MULTIPLICACAO,
-        TokenType.BARRA
-        ):
+    def unario(self):
+        ##expressoes unarias trabaham apenas com uma expressao.
+                # Parseia um termo numa expressão combinando fatores com operadores.
+                # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
+                # estrutura `unario`.
+        if self.verificar_fim(TokenType.MAIS, TokenType.MENOS):
+                    
             operador = self.avancar()
-            direita = self.unario()
-
-            expr = Binary(
-            expr,
-            operador,
+            direita = self.fator()
+        
+            return Unary(
+             operador,
             direita
-        )
+                )
 
+        return self.fator()
+        ###unario
+  # ↓
+#encontrou "-"?
+   #↓ sim
+#operador = "-"
+  # ↓
+#lê outra expressão unária
+#   ↓
+#Unary("-", expressão)
+
+
+    def adicao(self):
+        expr = self.termo()
+        while self.verificar_fim(TokenType.MAIS, TokenType.MENOS):
+            operador = self.avancar()
+            direita = self.termo()
+            expr = Binary(expr, operador, direita)
         return expr
+
+
+    def fator(self):
+        if self.verificar_fim(TokenType.NUMERO):
+            token = self.avancar()
+            return Literal(token.literal)
+
+        if self.verificar_fim(TokenType.STRING):
+            token = self.avancar()
+            return Literal(token.literal)
+
+        if self.verificar_fim(TokenType.IDENTIFICADOR):
+            return Variable(self.avancar())
+
+        if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
+            self.avancar()
+            expr = self.expressao()
+            self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' após a expressão.")
+            return Grouping(expr)
+        raise parserError(self.espiar().line, "Esperado uma expressão.")
 
 
   
@@ -155,18 +196,11 @@ class Parser:
 
         expr = self.fator()
 
-        while self.verificar_fim(
-        TokenType.MAIS,
-        TokenType.MENOS
-        ):
+        while self.verificar_fim(TokenType.MULTIPLICACAO, TokenType.BARRA):
             operador = self.avancar()
             direita = self.fator()
 
-        expr = Binary(
-            expr,
-            operador,
-            direita
-        )
+            expr = Binary(expr,operador,direita)
 
         return expr
 
@@ -195,18 +229,15 @@ class Parser:
     def mostrar_estado(self):
         #valor da expressao e chamado
         #funcao costume retornando um erro de parser
-        value = self.expressao()
-        self.costume(
-        TokenType.SEPARATOR,
-        "Esperado ';' depois desse valor.")
-        return print(value) 
+       self.costume(TokenType.PRINT, "Esperado 'print'.")
+       value = self.expressao()
+       return Print(value)
 
 
-    def expressoes_estado(self):
+    def expressao_estado(self):
         #expressao tambem recebe um valor e retorna um erro de parser vindo do costume
-        Expr = self.expressao()
-        self.costume(TokenType.SEPARATOR, "Esperado ';' depois desse valor")
-        return print(Expr)
+        expr = self.expressao()
+        return ExpressaoStatement(expr)
 
 
         
@@ -222,6 +253,9 @@ class Parser:
 
         if self.verificar_fim(TokenType.ENQUANTO):
             return self.declaracao_enquanto()
+
+        if self.verificar_fim(TokenType.RETORNO):
+            return self.declaracao_retorno()
 
         if self.verificar_fim(TokenType.FACA):
             return self.declaracao_faca_enquanto()
@@ -268,7 +302,7 @@ class Parser:
         if self.parser_math(TokenType.SENAO):
             senao = self.declaracao()
 
-            return Se(
+        return Se(
             condition,
             entao,
             senao
@@ -363,4 +397,11 @@ class Parser:
             name, 
             parametros, 
             Bloco)
+
+    def declaracao_retorno(self):
+        self.costume(TokenType.RETORNO, "Esperado 'retorno'.")
+        value = None
+        if not self.verificar_fim(TokenType.SEPARADORES):
+            value = self.expressao()
+        return retorno(value)
     
