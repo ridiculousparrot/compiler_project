@@ -63,8 +63,8 @@ def main():
 
     # Interpretador
     interpretador = Interpretador()
-    for stmt in statements:
-        interpretador.executar(stmt)
+    for node in statements:
+        interpretador.executar(node)
 
 if __name__ == "__main__":
     main()
