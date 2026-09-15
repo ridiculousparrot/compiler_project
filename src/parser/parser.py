@@ -125,7 +125,7 @@ class Parser:
         self.costume(TokenType.IGUAL_OUTRO, "Esperado '=' após o identificador.")
 
         initializer = self.expressao()   
-
+        self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' após a declaração da variável.")
         return Var(name, initializer)
 
 # Parseia um termo numa expressão combinando fatores com operadores.
@@ -180,7 +180,7 @@ class Parser:
         if self.verificar_fim(TokenType.IDENTIFICADOR):
             return Variable(self.avancar())
 
-        if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
+        if self.verificar_fim(TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos a expressao :("):
             self.avancar()
             expr = self.expressao()
             self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' após a expressão.")
@@ -237,6 +237,7 @@ class Parser:
     def expressao_estado(self):
         #expressao tambem recebe um valor e retorna um erro de parser vindo do costume
         expr = self.expressao()
+        self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
         return ExpressaoStatement(expr)
 
 
@@ -369,7 +370,7 @@ class Parser:
             parametros.append(
             self.consumir(
                 TokenType.IDENTIFICADOR,
-                "Esperado nome do parâmetro."
+                "esperado nome do parametro"
             )
         )
 #virgula para separar os parametros, caso tenha mais de um, e vai adicionar na lista de parametros soma(a, b) exemplo
@@ -377,7 +378,7 @@ class Parser:
             parametros.append(
                 self.consumir(
                     TokenType.IDENTIFICADOR,
-                    "Esperado nome do parâmetro."
+                    "esperado nome do parametro."
                 )
             )
 #chama tokens da funcao, parenteses e chaves
@@ -401,7 +402,8 @@ class Parser:
     def declaracao_retorno(self):
         self.costume(TokenType.RETORNO, "Esperado 'retorno'.")
         value = None
-        if not self.verificar_fim(TokenType.SEPARADORES):
+        if not self.verificar_fim(TokenType.PONTO_VIRGULA):
             value = self.expressao()
+            self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
         return retorno(value)
     

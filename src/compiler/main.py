@@ -50,9 +50,12 @@ from src.semantic.analyzer import Interpretador
 ##}
 
 def main():
-    codigo = 'var nome = "Pedro" ' \
-    'retorno nome'
-
+    codigo = 'var x = 10;' \
+    'SE (x > 5) {' \
+    ' print(x);' \
+    '} SENAO {' \
+    'print(0);' \
+    '}'
     # Lexer
     lexer = Lexer(codigo)
     tokens = lexer.scanear_tokens()
@@ -63,8 +66,10 @@ def main():
 
     # Interpretador
     interpretador = Interpretador()
-    for node in statements:
-        interpretador.executar(node)
+    for stmt in statements:
+        resultado = interpretador.executar(stmt)
+    if resultado is not None:
+        print(interpretador.stringify(resultado))
 
 if __name__ == "__main__":
     main()

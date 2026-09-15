@@ -83,6 +83,8 @@ class TokenType(Enum):
 
     PRINT = auto()
 
+    PONTO_VIRGULA = auto()
+
 
     
 #tokens de operadores, como +, -, *, /, =, ==, !=, >, <, >=, <=, !=
@@ -194,9 +196,11 @@ class Lexer:
         elif char == "<=":
             self.add_token(TokenType.MENOR_IGUAL)
         elif char == '"':
-            self.add_token(TokenType.STRING)
+            self.string()
         elif char == ",":
             self.add_token(TokenType.VIRGULA)
+        elif char == ";":
+            self.add_token(TokenType.PONTO_VIRGULA)
         elif char in ["(", ")"]:
             self.add_token(TokenType.PARENTESES_ESQUERDO if char == "(" else TokenType.PARENTESES_DIREITO)
         elif char in ["{", "}"]:
@@ -205,6 +209,8 @@ class Lexer:
             self.add_token(TokenType.COLCHETES_ESQUERDO if char == "[" else TokenType.COLCHETES_DIREITO)
         elif char in ["{", "}", "[", "]", ";", ","]:
             self.add_token(TokenType.SEPARADORES)
+        elif char == '"':
+            self.add_token(TokenType.STRING)
         elif char in [" ", "\r", "\t"]:
             pass
         elif char == "\n":
@@ -257,3 +263,20 @@ class Lexer:
             # define o indentificador, que percorre os caracteres alfanuméricos e sublinhados, avançando o índice atual até encontrar um caractere que não seja válido para um identificador. Em seguida, extrai o texto correspondente ao identificador e verifica se é uma palavra reservada (como "var" ou "if"), adicionando o token correspondente à lista de tokens. Se não for uma palavra reservada, adiciona um token do tipo IDENTIFIER.
 
             # classe lexer, que é responsável por analisar o código fonte e gerar os tokens correspondentes, utilizando métodos para identificar números, identificadores, operadores e separadores.
+        
+    def string (self):
+
+        #se o o consumo nao c
+        while not self.se_fim() and self.source[self.current] != '"':
+            if self.source[self.current] =="\n":
+                self.line +=1
+            self.avancar()
+
+        if self.se_fim():
+            raise Exception(f"string inacabada na linha {self.line}")
+
+        valor = self.source[self.start + 1: self.current]
+
+        self.avancar() #consome a etapa de fechamento
+
+        self.add_token(TokenType.STRING, valor)

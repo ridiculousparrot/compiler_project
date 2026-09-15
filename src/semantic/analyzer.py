@@ -1,6 +1,11 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao
 class Interpretador:
+
+    def __init__(self):
+        #define o ambiente da linguagem e guarda espaco para declaracoes de variaveis
+        self.ambiente = {}
+        self.variaveis = {}
 
     #cria a classse interpretador, que é responsável por avaliar e executar as expressões da linguagem.
 
@@ -17,6 +22,13 @@ class Interpretador:
             return self.visitarExpressaoUnaria(expr)
         if isinstance(expr, Binary):
             return self.visitarExpressaoBinaria(expr)
+        if isinstance(expr, Var):
+            return self.visitar_variavel(expr)
+        if isinstance(expr, Variable):
+            return self.visitarVariableExpr(expr)
+        if isinstance(expr, Atribuicao):
+            return self.visitar_atribuicao(expr)
+
         raise Exception(f"Tipo de expressão desconhecido: {type(expr)}")
 
     # faz com que a expressão aceite o interpretador, chamando o método apropriado para avaliar o tipo específico de expressão.
@@ -113,12 +125,40 @@ class Interpretador:
             return self.visitar_retorno(stmt)
         if isinstance(stmt, Faca_enquanto):
             return self.visitar_faca_enquanto(stmt)
+        if isinstance(stmt, ExpressaoStatement):
+            return self.visitarExpressaoStmt(stmt)
         raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
     
 # visita a expressão de print, avaliando a expressão e imprimindo o resultado na saída padrão.
     def visitarExpressaoStmt(self,stmt):
-        self.avaliar(stmt.expressao)
+        self.avaliar(stmt.expression)
         return None
+
+#define funcao de definir uma variavel 
+
+    def definir_variavel(self, nome, valor):
+        self.variaveis[nome] = valor
+##funcao que busca os valores da variavel ou o nome atribuida a valor x, logo ele retorna o nome depois
+#de uma validacao de nome nas variaveis.
+    def buscar_variavel(self, name_token):
+        nome = name_token.lexeme
+        if nome in self.variaveis:
+            return self.variaveis[nome]
+        raise Exception(f"Variavel nao definida {nome} na linha {name_token.line}")
+##Visitar variavel nessecario para ler o que e variabel, a atribuicao do seu nome com if, chamando a expressao expr, variavel nao perternce ao grupo de statements
+#se nao estiver no ambiente retorna exception para que nao seja declarada
+#retorna o ambimente com o nome dela caso nao cair na chamada condicional
+
+    def visitar_variavel(self, expr):
+        if expr.name.lexeme not in self.ambiente:
+            raise Exception(f"variavel nao declarada: {expr.name.lexeme}")
+        return self.ambiente[expr.name.lexeme]
+
+##A atribuicao da expressao, valor chama a expressao do valor que existe e retorna ao ambiente criado
+    def visitar_atribuicao(self, expr):
+        value = self.avaliar(expr.value)
+        self.ambiente[expr.name.lexeme] = value
+        return value
     
 #visita a  o print statement, avaliando a expressão e imprimindo o resultado na saída padrão.
     def visitarPrintStmt(self, stmt):
@@ -160,8 +200,12 @@ class Interpretador:
         value = None
         if stmt.initializer is not None:
             value = self.avaliar(stmt.initializer)
+            self.definir_variavel(stmt.name.lexeme, value)
         return value
-    
+
+#funcao de visitar variavel
+    def visitarVariableExpr(self, expr):
+        return self.buscar_variavel(expr.name)
 #visitar a condicao se, se existe a condicao dentro do statement  
 # visita se a condicao for verdadeira
     def visitar_se(self, stmt):
@@ -195,3 +239,7 @@ class Interpretador:
         if stmt.value is not None:
             value = self.avaliar(stmt.value)
         return value
+
+##Visitar variavel nessecario para ler o que e variabel, a atribuicao do seu nome com if, chamando a expressao expr, variavel nao perternce ao grupo de statements
+#se nao estiver no ambiente retorna exception para que nao seja declarada
+#retorna o ambimente com o nome dela caso nao cair na chamada condicional
