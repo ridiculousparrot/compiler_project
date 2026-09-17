@@ -111,8 +111,7 @@ class TokenType(Enum):
 
     DIFERENTE = auto()
 
-    
-
+    NEGACAO = auto()
 
 
 # classe token, que representa cada token encontrado no código fonte, com seu tipo, lexema, valor literal e número da linha onde foi encontrado.
@@ -236,6 +235,7 @@ class Lexer:
             self.avancar()
 
         text = self.source[self.start : self.current]
+        palavra = text.lower()
 
         if text == "var":
             self.add_token(TokenType.VARIAVEL)

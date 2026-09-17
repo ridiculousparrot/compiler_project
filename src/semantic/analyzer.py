@@ -5,7 +5,6 @@ class Interpretador:
     def __init__(self):
         #define o ambiente da linguagem e guarda espaco para declaracoes de variaveis
         self.ambiente = {}
-        self.variaveis = {}
 
     #cria a classse interpretador, que é responsável por avaliar e executar as expressões da linguagem.
 
@@ -52,7 +51,7 @@ class Interpretador:
             case TokenType.MENOS:
                 return -direita
 
-            case TokenType.OUTROS:
+            case TokenType.NEGACAO:
                 return not self.seVerdadeiro(direita)
 
         return None
@@ -115,8 +114,6 @@ class Interpretador:
     def executar(self, stmt):
         if isinstance(stmt, Print):
             return self.visitarPrintStmt(stmt)
-        if isinstance(stmt, Var):
-            return self.visitar_declaracao_variavel(stmt)
         if isinstance(stmt, Se):
             return self.visitar_se(stmt)
         if isinstance(stmt, Enquanto):
@@ -127,6 +124,8 @@ class Interpretador:
             return self.visitar_faca_enquanto(stmt)
         if isinstance(stmt, ExpressaoStatement):
             return self.visitarExpressaoStmt(stmt)
+        if isinstance(stmt, Bloco):
+            return self.visitar_bloco(stmt)
         raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
     
 # visita a expressão de print, avaliando a expressão e imprimindo o resultado na saída padrão.
@@ -137,22 +136,18 @@ class Interpretador:
 #define funcao de definir uma variavel 
 
     def definir_variavel(self, nome, valor):
-        self.variaveis[nome] = valor
+        self.ambiente[nome] = valor
 ##funcao que busca os valores da variavel ou o nome atribuida a valor x, logo ele retorna o nome depois
 #de uma validacao de nome nas variaveis.
     def buscar_variavel(self, name_token):
         nome = name_token.lexeme
-        if nome in self.variaveis:
-            return self.variaveis[nome]
+        if nome in self.ambiente:
+            return self.ambiente[nome]
         raise Exception(f"Variavel nao definida {nome} na linha {name_token.line}")
 ##Visitar variavel nessecario para ler o que e variabel, a atribuicao do seu nome com if, chamando a expressao expr, variavel nao perternce ao grupo de statements
 #se nao estiver no ambiente retorna exception para que nao seja declarada
 #retorna o ambimente com o nome dela caso nao cair na chamada condicional
 
-    def visitar_variavel(self, expr):
-        if expr.name.lexeme not in self.ambiente:
-            raise Exception(f"variavel nao declarada: {expr.name.lexeme}")
-        return self.ambiente[expr.name.lexeme]
 
 ##A atribuicao da expressao, valor chama a expressao do valor que existe e retorna ao ambiente criado
     def visitar_atribuicao(self, expr):
@@ -243,3 +238,10 @@ class Interpretador:
 ##Visitar variavel nessecario para ler o que e variabel, a atribuicao do seu nome com if, chamando a expressao expr, variavel nao perternce ao grupo de statements
 #se nao estiver no ambiente retorna exception para que nao seja declarada
 #retorna o ambimente com o nome dela caso nao cair na chamada condicional
+
+
+    def visitar_bloco(self, stmt):
+        resultado = None
+        for statement in stmt.statements:
+            resultado = self.executar(statement)
+        return resultado 

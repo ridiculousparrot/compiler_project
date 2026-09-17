@@ -51,9 +51,9 @@ from src.semantic.analyzer import Interpretador
 
 def main():
     codigo = 'var x = 10;' \
-    'SE (x > 5) {' \
+    'se (x > 5) {' \
     ' print(x);' \
-    '} SENAO {' \
+    '} senao {' \
     'print(0);' \
     '}'
     # Lexer
