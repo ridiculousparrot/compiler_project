@@ -114,6 +114,8 @@ class Interpretador:
     def executar(self, stmt):
         if isinstance(stmt, Print):
             return self.visitarPrintStmt(stmt)
+        if isinstance(stmt, Var):
+            return self.visitar_declaracao_variavel(stmt)
         if isinstance(stmt, Se):
             return self.visitar_se(stmt)
         if isinstance(stmt, Enquanto):

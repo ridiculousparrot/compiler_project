@@ -50,12 +50,8 @@ from src.semantic.analyzer import Interpretador
 ##}
 
 def main():
-    codigo = 'var x = 10;' \
-    'se (x > 5) {' \
-    ' print(x);' \
-    '} senao {' \
-    'print(0);' \
-    '}'
+    codigo = 'var soma = 5 + 3 * 2 ;' \
+    'retorno soma;'
     # Lexer
     lexer = Lexer(codigo)
     tokens = lexer.scanear_tokens()
