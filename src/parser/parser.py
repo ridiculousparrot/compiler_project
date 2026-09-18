@@ -18,7 +18,8 @@ from src.parser.ast import (
     Grouping,
     ExpressaoStatement,
     retorno,
-    Atribuicao
+    Atribuicao,
+    chamar
 )
 
 
@@ -138,14 +139,12 @@ class Parser:
         if self.verificar_fim(TokenType.MAIS, TokenType.MENOS):
                     
             operador = self.avancar()
-            direita = self.fator()
+            direita = self.chamada()
         
-            return Unary(
-             operador,
-            direita
-                )
+            return self.chamada()
+                
 
-        return self.fator()
+        return self.chamada()
         ###unario
   # ↓
 #encontrou "-"?
@@ -171,7 +170,7 @@ class Parser:
             igual = self.avancar()
             valor = self.atribuicao()
             if isinstance(expr, Variable):
-                return self.Atribuicao(expr.name, valor)
+                return Atribuicao(expr.name, valor)
 
             raise parserError(igual.line, "Atribuicao pode ser feitas em variaveis declaradas")
 
@@ -324,7 +323,8 @@ class Parser:
             return self.declaracao_faca_enquanto()
         if self.verificar_fim(TokenType.CHAVES_ESQUERDO):
             return self.bloco()
-        
+        if self.verificar_fim(TokenType.FUNCAO):
+            return self.declaracao_funcao()
         return self.estado()
 
 
@@ -424,6 +424,56 @@ class Parser:
         )
 
 
+### AS CHAMADAS PERMITEM QUE FAZERMOS AS FUNCOES DE UMA CHAMADA PARA ABERTURA DE UMA FUNCAO (PARAMETRO + PARAMETRO B)
+### JOGA EM LACO CASO ACHA O TOKEN DE PARENTESES
+## RETORNA RESULTADO DA EXPRESSAO VINDA DO FATOR
+# FINALIZAR CHAMADA DEFININDO ARGUMENTOS COMO UMA LISTA VAZIA, SE NAO TIVER TOKEN DE PARENTESES DIRETO, DA ERRO, MAS SE TIVER
+#FACILITA A LEITURA DO TOKEN ',' E DENTRO DELE SE ESPERA A DECLARACAO DA EXPRESSAO DENTRO DOS PARENTESESm RETORNANDO OS ARGUMENTOS, A CHAMADA 
+#E OS PARAMETROS
+    def chamada(self):
+        expr = self.fator()
+
+        while True:
+            if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
+                self.avancar()
+                expr = self.finalizar_chamada(expr)
+            else:
+                break
+
+        return expr
+
+    def finalizar_chamada(self, calle):
+        argumentos = [
+        ]
+
+        if not self.verificar_fim(TokenType.PARENTESES_DIREITO):
+            argumentos.append(self.expressao())
+            while self.parser_math(TokenType.VIRGULA):
+                argumentos.append(self.expressao())
+
+        paren = self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')'.")
+        return chamar(calle, paren, argumentos)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #relativamente, essa foi a funcao mais complexa de se fazer,
 #a funcao declaracao funcao, vai trabalhar com os devidos tokens, funcao, parametro identificador, parenteses esquerdo e direito, 
 # chaves esquerdo e direito, e vai retornar a funcao com o nome, parametros e corpo da funcao
@@ -441,17 +491,17 @@ class Parser:
 #mas no caso se for declarado, ele vai verificar 
 # se o token e diferente de parenteses 
 # direito, caso seja diferente, ele vai adicionar o parametro na lista de parametros
-        if not self.verificar(TokenType.PARENTESES_DIREITO):
+        if not self.verificar_fim(TokenType.PARENTESES_DIREITO):
             parametros.append(
-            self.consumir(
+            self.costume(
                 TokenType.IDENTIFICADOR,
                 "esperado nome do parametro"
             )
         )
 #virgula para separar os parametros, caso tenha mais de um, e vai adicionar na lista de parametros soma(a, b) exemplo
-        while self.corresponde(TokenType.VIRGULA):
+        while self.parser_math(TokenType.VIRGULA):
             parametros.append(
-                self.consumir(
+                self.costume(
                     TokenType.IDENTIFICADOR,
                     "esperado nome do parametro."
                 )
@@ -464,15 +514,15 @@ class Parser:
         corpo = []
 #enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
 
-        while not self.verificar(TokenType.CHAVES_DIREITO) and not self.fim():
-             Bloco.append(self.declaracao())
+        while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
+             corpo.append(self.declaracao())
 #token de fechar token
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de 'FUNCAO'.")
 #retorna a funcao com o nome, parametros e corpo da funcao
         return funcao(
-            name, 
-            parametros, 
-            Bloco)
+            body=Bloco(corpo),
+            name = name,
+            parametros = parametros)
 
     def declaracao_retorno(self):
         self.costume(TokenType.RETORNO, "Esperado 'retorno'.")

@@ -1,5 +1,9 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar
+
+class retornarException(Exception):
+    def __init__(self, value):
+        self.value = value
 class Interpretador:
 
     def __init__(self):
@@ -27,6 +31,8 @@ class Interpretador:
             return self.visitarVariableExpr(expr)
         if isinstance(expr, Atribuicao):
             return self.visitar_atribuicao(expr)
+        if isinstance(expr, chamar):
+            return self,self.visitar_funcao()
 
         raise Exception(f"Tipo de expressão desconhecido: {type(expr)}")
 
@@ -128,6 +134,8 @@ class Interpretador:
             return self.visitarExpressaoStmt(stmt)
         if isinstance(stmt, Bloco):
             return self.visitar_bloco(stmt)
+        if isinstance(stmt, funcao):
+            return self.visitar_funcao(stmt)
         raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
     
 # visita a expressão de print, avaliando a expressão e imprimindo o resultado na saída padrão.
@@ -165,10 +173,20 @@ class Interpretador:
 
 #a funcao interpretar_funcao recebe uma lista de statements e 
 # executa cada um deles chamando o método executar, permitindo que a função seja interpretada e suas ações sejam realizadas.
-    def interpretar_funcao(self, stmt):
-         for statement in statement:
-            self.executar(statement)
+    def interpretar_funcao(self, funcao_stmt, argumentos):
+        ambiente_anterior = self.ambiente
+        self.ambiente = dict(ambiente_anterior)
 
+        for param, valor in zip(funcao_stmt.parametros, argumentos):
+            self.ambiente[param.lexeme] = valor
+
+            resultado = None
+            try: 
+                for statement in funcao_stmt.body.statements:
+                    resultado = self.executar(statement)
+            finally:self.ambiente = ambiente_anterior
+
+            return resultado 
     #verifica se o valor e nulo, caso sim, retorna nulo, se for booleano, retorna o valor, caso contrario, considera o valor como verdadeiro
     def stringify(self, value):
         if value is None:
@@ -227,7 +245,8 @@ class Interpretador:
 
     def visitar_funcao(self, stmt):
         #aqui a funcao vai retornar o valor da funcao, que pode ser None caso a expressao digitada nao tenha valor
-        return stmt
+       self.ambiente[stmt.name.lexeme] = stmt
+       return None
 
 #regra de retur, define valor de retorno = nulo, se o valor do statemnt nao for nulo, ele avalia noamente o valor da statement, e retorna 
 # o valor da expressao digitada, caso nao tenha valor, retorna nulo
@@ -235,7 +254,7 @@ class Interpretador:
         value = None
         if stmt.value is not None:
             value = self.avaliar(stmt.value)
-        return value
+        raise retornarException(value)
 
 ##Visitar variavel nessecario para ler o que e variabel, a atribuicao do seu nome com if, chamando a expressao expr, variavel nao perternce ao grupo de statements
 #se nao estiver no ambiente retorna exception para que nao seja declarada
@@ -247,3 +266,7 @@ class Interpretador:
         for statement in stmt.statements:
             resultado = self.executar(statement)
         return resultado 
+
+
+
+    
