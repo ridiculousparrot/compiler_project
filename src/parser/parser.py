@@ -19,7 +19,9 @@ from src.parser.ast import (
     ExpressaoStatement,
     retorno,
     Atribuicao,
-    chamar
+    chamar,
+    Trocar,
+    Quebrar
 )
 
 
@@ -325,6 +327,14 @@ class Parser:
             return self.bloco()
         if self.verificar_fim(TokenType.FUNCAO):
             return self.declaracao_funcao()
+
+        if self.verificar_fim(TokenType.TROCAR):
+            return self.trocar_declaracao()
+
+        if self.verificar_fim(TokenType.QUEBRAR):
+            self.avancar()
+            self.costume(TokenType.PONTO_VIRGULA, "esperado ';' depois de quebrar")
+            return Quebrar()
         return self.estado()
 
 
@@ -531,4 +541,35 @@ class Parser:
             value = self.expressao()
             self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
         return retorno(value)
-    
+
+
+    def trocar_declaracao(self):
+        self.costume(TokenType.TROCAR, "Esperado trocar")
+
+        self.costume(TokenType.PARENTESES_ESQUERDO, 'Esperado "(" depois de trocar')
+
+        condition = self.expressao()
+
+        self.costume(TokenType.PARENTESES_DIREITO, 'Esperado ")" depois de trocar')
+
+        self.costume(TokenType.CHAVES_ESQUERDO, 'Esperado "{" depois de trocar')
+
+        casos = []
+
+        while self.verificar_fim(TokenType.CASO):
+            self.avancar() ###consome o caso
+
+            valor = self.costume(TokenType.NUMERO, "Esperaodu um valor numerico depois de 'caso'. ")
+
+            self.costume(TokenType.DOIS_PONTOS, "Esperado ':' depois do numero")
+
+            statements = []
+####Encontrar prximo caso ou } de fechamentos
+            while not self.verificar_fim(TokenType.CASO, TokenType.CHAVES_DIREITO) and not self.verificar_fim():
+                statements.append(self.declaracao())
+
+            casos.append ((valor.literal, statements))
+
+        self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'' depois do trocar.")
+
+        return Trocar(condition, casos )

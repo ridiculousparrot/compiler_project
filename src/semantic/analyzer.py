@@ -1,5 +1,5 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar
 
 class retornarException(Exception):
     def __init__(self, value):
@@ -32,7 +32,7 @@ class Interpretador:
         if isinstance(expr, Atribuicao):
             return self.visitar_atribuicao(expr)
         if isinstance(expr, chamar):
-            return self,self.visitar_funcao()
+            return self.visitar_chamar(expr)
 
         raise Exception(f"Tipo de expressão desconhecido: {type(expr)}")
 
@@ -136,6 +136,10 @@ class Interpretador:
             return self.visitar_bloco(stmt)
         if isinstance(stmt, funcao):
             return self.visitar_funcao(stmt)
+        if isinstance(stmt, Trocar):
+            return self.visitar_trocar(stmt)
+        if isinstance(stmt, Quebrar):
+            return None
         raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
     
 # visita a expressão de print, avaliando a expressão e imprimindo o resultado na saída padrão.
@@ -261,7 +265,42 @@ class Interpretador:
 #retorna o ambimente com o nome dela caso nao cair na chamada condicional
 
 
+
     def visitar_bloco(self, stmt):
+#Executa sequencialmente todas as instruções pertencentes a um bloco.
+
+    #O método percorre a lista de instruções armazenada em `stmt.statements`
+    #e envia cada instrução para o método `executar()`. O resultado da última
+    #instrução executada é armazenado e retornado ao final.
+
+    #Parâmetros:
+        #stmt:
+       #     Nó da AST que representa um bloco de instruções. Esse nó deve
+      #      possuir o atributo `statements`, contendo as instruções que
+     #       fazem parte do bloco.
+
+    #Retorno:
+      #  O resultado da última instrução executada no bloco. Caso o bloco
+     #   não possua instruções, retorna `None`.
+
+    #Funcionamento:
+      #  1. Inicializa `resultado` com `None`.
+     #   2. Percorre todas as instruções do bloco.
+    #    3. Executa cada instrução utilizando `self.executar()`.
+   #     4. Atualiza `resultado` com o retorno da instrução atual.
+  #      5. Retorna o resultado da última instrução.
+
+ #   Exemplo:
+#        Um bloco como:
+
+            #{
+            #    x = 10;
+           #     y = 20;
+          #      imprimir(y);
+         #   }
+
+        #terá suas instruções executadas na ordem em que aparecem.
+    
         resultado = None
         for statement in stmt.statements:
             resultado = self.executar(statement)
@@ -269,4 +308,110 @@ class Interpretador:
 
 
 
+    def visitar_chamar(self, expr):
+     #     Avalia e executa uma chamada de função representada na AST.
+
+    #O método primeiro avalia a expressão que representa a função a ser
+    #chamada. Em seguida, verifica se o resultado é uma instância de
+    #`funcao`. Caso seja, os argumentos fornecidos são avaliados e
+    #associados aos respectivos parâmetros da função.
+
+    #Durante a execução da função, um novo ambiente é criado a partir do
+    #ambiente atual. Esse novo ambiente recebe os valores dos parâmetros,
+    #permitindo que as variáveis utilizadas pela função sejam isoladas
+    #do ambiente anterior.
+
+    #Parâmetros:
+       # expr:
+         #   Nó da AST que representa uma chamada de função. Deve possuir:
+        #        - `calle`: expressão que representa a função chamada;
+       #         - `argumentos`: lista de expressões correspondentes aos
+      #            argumentos fornecidos;
+     #           - `paren.line`: linha em que o parêntese da chamada aparece.
+
+    #Retorno:
+        #O valor retornado pela função.
+
+        #Caso a função não possua uma instrução `return`, o resultado será
+        #`None`.
+
+    #Exceções:
+        #Exception:
+            #Gerada quando o objeto avaliado em `expr.calle` não é uma
+            #função ou quando a quantidade de argumentos fornecidos é
+            #diferente da quantidade de parâmetros da função.
+
+        #retornarException:
+            # utilizada internamente para interromper a execução da função
+            #quando uma instrução `return` é encontrada. O valor armazenado
+           # nessa exceção é utilizado como resultado da chamada.
+
+    #Funcionamento:
+        #1. Avalia a expressão que representa a função.
+        #2. Verifica se o resultado é uma função.
+        #3. Avalia todos os argumentos da chamada.
+        #4. Verifica se a quantidade de argumentos corresponde à quantidade
+        #   de parâmetros.
+        #5. Salva o ambiente atual.
+        #6. Cria um novo ambiente para a execução da função.
+        #7. Associa cada parâmetro ao argumento correspondente.
+        #8. Executa o corpo da função.
+       # 9. Captura `retornarException` para obter o valor de retorno.
+      #  10. Restaura o ambiente anterior.
+     #   11. Retorna o resultado da função.
+
+    #Exemplo:
+        #Para uma função:
+
+           # funcao soma(a, b) {
+          #      return a + b;
+         #   }
+
+        #e uma chamada:
+
+        #    soma(10, 20);
+
+       # os valores `10` e `20` são associados aos parâmetros `a` e `b`,
+     #   respectivamente. A execução do corpo produz o valor `30`, que é
+       # retornado pela chamada.
     
+        chamar = self.avaliar(expr.callee)
+
+        if not isinstance(chamar, funcao):
+            raise Exception(f"so e possivel chamar funcoes na linha{expr.line}")
+
+        argumentos = [self.avaliar(arg) for arg in expr.argumentos]
+
+        if len(argumentos)!= len(chamar.parametros):
+            raise Exception(
+                F"Esperado {len(chamar.parametros)} argumentos mas recebeu"
+                f"{len(argumentos)}, na linha {expr.paren.line}"
+
+            )
+
+        ambiente_anterior = self.ambiente 
+        self.ambiente = dict(ambiente_anterior)
+
+        for param, valor in zip(chamar.parametros, argumentos):
+            self.ambiente[param.lexeme] = valor
+
+        resultado = None
+
+        try:
+            self.executar(chamar.body)
+        except retornarException as ret:
+            resultado = ret.value
+        finally:
+            self.ambiente = ambiente_anterior
+
+        return resultado
+
+    def visitar_trocar(self,stmt):
+        valor = self.avaliar(stmt.condition)
+
+        for valor_caso, statements, in stmt.casos:
+            if valor == valor_caso:
+                for statement in statements:
+                    self.executar(statement)
+                return None
+        return None 

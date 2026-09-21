@@ -170,3 +170,11 @@ class chamar():
     paren: Token ## GUARDA TOKEN ) PARA TER A LINHA CRETA AO LANCAR ERRO DE ARGUMENTOS
     argumentos: list #### LISTA DE EXPR CADA UMA SENDO VALOR PASSADO
 
+@dataclass(frozen= True)
+class Trocar(Declaracao):
+    condition: Expr
+    casos: list
+
+@dataclass(frozen= True)
+class Quebrar(Declaracao):
+    pass

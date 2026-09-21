@@ -85,6 +85,10 @@ class TokenType(Enum):
 
     PONTO_VIRGULA = auto()
 
+    DOIS_PONTOS = auto()
+
+    CASO = auto()
+
 
     
 #tokens de operadores, como +, -, *, /, =, ==, !=, >, <, >=, <=, !=
@@ -212,6 +216,10 @@ class Lexer:
             self.add_token(TokenType.STRING)
         elif char in [" ", "\r", "\t"]:
             pass
+        elif char in [":"]:
+            self.add_token(TokenType.DOIS_PONTOS)
+     
+
         elif char == "\n":
             self.line += 1
         else:
@@ -251,12 +259,14 @@ class Lexer:
             self.add_token(TokenType.FUNCAO)
         elif text == "retorno":
             self.add_token(TokenType.RETORNO)
-        elif text == "ain_talon":
+        elif text == "quebrar":
             self.add_token(TokenType.QUEBRAR)
         elif text == "trocar":
             self.add_token(TokenType.TROCAR)
         elif text == "print":
             self.add_token(TokenType.PRINT)
+        elif text == "caso":
+            self.add_token(TokenType.CASO)
         else:
             self.add_token(TokenType.IDENTIFICADOR)
 
