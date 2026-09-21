@@ -31,7 +31,7 @@ from src.semantic.analyzer import Interpretador
 
 ##// Função e retorno
 ##funcao soma(a, b) {
-##   retorno a + b
+##   retorno a + b;
 ##}
 
 ##// Switch / case (TROCAR / QUEBRAR)
@@ -51,12 +51,16 @@ from src.semantic.analyzer import Interpretador
 
 def main():
     codigo = (
-    'var a = 10;'
-    'var b = 5;'
-    'funcao soma(a, b) {'
-    ' retorno a + b;'
-    '}'
-    'print soma();')
+  'var x = 2;'
+  'trocar (x) {'
+  'caso 1:'
+  'print "um";' \
+  'quebrar;'
+  'caso 2:'
+  'print "dois";'
+  'quebrar;'
+  '}'
+)
     # Lexer
     lexer = Lexer(codigo)
     tokens = lexer.scanear_tokens()
