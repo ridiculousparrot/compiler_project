@@ -174,56 +174,85 @@ class Lexer:
 
         if char.isalpha() or char == "_":
             self.identifier()
+
         elif char.isdigit():
             self.number()
+
         elif char == "+":
             self.add_token(TokenType.MAIS)
+
         elif char == "-":
             self.add_token(TokenType.MENOS)
+
         elif char == "*":
             self.add_token(TokenType.MULTIPLICACAO)
+
         elif char == "/":
             self.add_token(TokenType.BARRA)
-        elif char == "!=":
-            self.add_token(TokenType.DIFERENTE)
-        elif char == "==":
-            self.add_token(TokenType.IGUAL_IGUAL)
+
+        elif char == "!":
+            if self.combinar_operadores("="):
+                self.add_token(TokenType.DIFERENTE)
+            else:
+                self.add_token(TokenType.NEGACAO)
+
         elif char == "=":
-            self.add_token(TokenType.IGUAL_OUTRO)
+            if self.combinar_operadores("="):
+                self.add_token(TokenType.IGUAL_IGUAL)
+            else:
+                self.add_token(TokenType.IGUAL_OUTRO)
+
         elif char == ">":
-            self.add_token(TokenType.MAIOR)
-        elif char == ">=":
-            self.add_token(TokenType.MAIOR_IGUAL)
+            if self.combinar_operadores("="):
+                self.add_token(TokenType.MAIOR_IGUAL)
+            else:
+                self.add_token(TokenType.MAIOR)
+
         elif char == "<":
-            self.add_token(TokenType.MENOR)
-        elif char == "<=":
-            self.add_token(TokenType.MENOR_IGUAL)
+            if self.combinar_operadores("="):
+                self.add_token(TokenType.MENOR_IGUAL)
+            else:
+                self.add_token(TokenType.MENOR)
+
         elif char == '"':
             self.string()
+
         elif char == ",":
             self.add_token(TokenType.VIRGULA)
+
         elif char == ";":
             self.add_token(TokenType.PONTO_VIRGULA)
-        elif char in ["(", ")"]:
-            self.add_token(TokenType.PARENTESES_ESQUERDO if char == "(" else TokenType.PARENTESES_DIREITO)
-        elif char in ["{", "}"]:
-            self.add_token(TokenType.CHAVES_ESQUERDO if char == "{" else TokenType.CHAVES_DIREITO)
-        elif char in ["[", "]"]:
-            self.add_token(TokenType.COLCHETES_ESQUERDO if char == "[" else TokenType.COLCHETES_DIREITO)
-        elif char in ["{", "}", "[", "]", ";", ","]:
-            self.add_token(TokenType.SEPARADORES)
-        elif char == '"':
-            self.add_token(TokenType.STRING)
+
+        elif char == "(":
+            self.add_token(TokenType.PARENTESES_ESQUERDO)
+
+        elif char == ")":
+            self.add_token(TokenType.PARENTESES_DIREITO)
+
+        elif char == "{":
+            self.add_token(TokenType.CHAVES_ESQUERDO)
+
+        elif char == "}":
+            self.add_token(TokenType.CHAVES_DIREITO)
+
+        elif char == "[":
+            self.add_token(TokenType.COLCHETES_ESQUERDO)
+
+        elif char == "]":
+            self.add_token(TokenType.COLCHETES_DIREITO)
+
         elif char in [" ", "\r", "\t"]:
             pass
-        elif char in [":"]:
+
+        elif char == ":":
             self.add_token(TokenType.DOIS_PONTOS)
-     
 
         elif char == "\n":
             self.line += 1
+
         else:
-            raise Exception(f"Caractere inesperado na linha {self.line}: {char}")
+            raise Exception(
+                f"Caractere inesperado na linha {self.line}: {char}")
 
         # valida se o caractere atual é uma letra ou um sublinhado, indicando o início de um identificador ou palavra reservada, ou se é um dígito, indicando o início de um número. Também verifica se o caractere é um operador ou separador, ou se é um espaço em branco ou nova linha, e trata cada caso adequadamente. Se encontrar um caractere inesperado, lança uma exceção.
 
@@ -290,3 +319,15 @@ class Lexer:
         self.avancar() #consome a etapa de fechamento
 
         self.add_token(TokenType.STRING, valor)
+
+
+###FUNCAO SIMPPLES QUE COMBINA OS OPERADORES, JA QUE O LEXER LE APENAS UM TOKEN POR VEZ
+
+    def combinar_operadores(self, esperado):
+        if self.se_fim():
+            return False
+        if self.source[self.current] != esperado:
+            return False 
+
+        self.current += 1
+        return True

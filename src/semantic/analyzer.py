@@ -106,8 +106,8 @@ class Interpretador:
             case TokenType.MENOR_IGUAL:
                 return esquerda <= direita
 
-            case TokenType.IGUAL_OUTRO:
-                return esquerda != direita
+            case TokenType.DIFERENTE:
+                 return esquerda != direita
 
             case TokenType.IGUAL_IGUAL:
                 return esquerda == direita

@@ -138,12 +138,12 @@ class Parser:
                 # Parseia um termo numa expressão combinando fatores com operadores.
                 # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
                 # estrutura `unario`.
-        if self.verificar_fim(TokenType.MAIS, TokenType.MENOS):
+        if self.verificar_fim(TokenType.MAIS, TokenType.MENOS, TokenType.NEGACAO):
                     
             operador = self.avancar()
             direita = self.chamada()
         
-            return self.chamada()
+            return Unary(operador, direita)
                 
 
         return self.chamada()
@@ -188,10 +188,10 @@ class Parser:
 
     def comparacao(self):
         expr = self.adicao()
-        while self.verificar_fim(TokenType.MAIOR_IGUAL, 
-                                 TokenType.MENOR_IGUAL, 
-                                 TokenType.MAIOR, 
-                                 TokenType.MENOR):
+        while self.verificar_fim(TokenType.MAIOR,
+        TokenType.MAIOR_IGUAL,
+        TokenType.MENOR,
+        TokenType.MENOR_IGUAL):
            operador = self.avancar()
            direita = self.adicao()
            expr = Binary(expr, operador, direita)
@@ -565,7 +565,7 @@ class Parser:
 
             statements = []
 ####Encontrar prximo caso ou } de fechamentos
-            while not self.verificar_fim(TokenType.CASO, TokenType.CHAVES_DIREITO) and not self.verificar_fim():
+            while not self.verificar_fim(TokenType.CASO, TokenType.CHAVES_DIREITO) and not self.fim():
                 statements.append(self.declaracao())
 
             casos.append ((valor.literal, statements))

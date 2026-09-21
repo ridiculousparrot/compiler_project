@@ -49,17 +49,22 @@ from src.semantic.analyzer import Interpretador
 ##    print("diferente")
 ##}
 
+
+##//faca enquanto e enquanto 
+
+##
+
 def main():
-    codigo = (
-  'var x = 2;'
-  'trocar (x) {'
-  'caso 1:'
-  'print "um";' \
-  'quebrar;'
-  'caso 2:'
-  'print "dois";'
-  'quebrar;'
-  '}'
+    codigo = ('' \
+    'var x = 2;'
+    'trocar (x) {'
+    'caso 1:'
+    'print("um");'
+    'quebrar;'
+    'caso 2:'
+    ' print("dois");'
+    'quebrar;'
+    '}' \
 )
     # Lexer
     lexer = Lexer(codigo)
