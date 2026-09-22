@@ -1,6 +1,6 @@
 # Projeto de linguagem interpretada em Python 
 
-## LUDUS Version: 0.1.0
+## LUDUS Snapshot: 0.1.0
 
 Este repositório contém um interpretador/compilador simples de uma linguagem de programação com sintaxe inspirada em pseudocódigos e em português estruturado. O projeto foi organizado em módulos para separar análise léxica, análise sintática, AST, interpretação e geração de código.
 
