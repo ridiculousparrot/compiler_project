@@ -242,10 +242,12 @@ class Interpretador:
 
 #visitar a condicao faca enquanto, quando executa o circulo do while, verrifica a condicao, se for verdadeira repetete o processo, caso falsa, encerra o loop
     def visitar_faca_enquanto(self, stmt):
-        while True:
-            self.executar(stmt.body)
+          while True:
+            for declaracao in stmt.body:
+                self.executar(declaracao)
+
             if not self.seVerdadeiro(self.avaliar(stmt.condition)):
-                break 
+                break
 
     def visitar_funcao(self, stmt):
         #aqui a funcao vai retornar o valor da funcao, que pode ser None caso a expressao digitada nao tenha valor

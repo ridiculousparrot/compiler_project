@@ -413,12 +413,19 @@ class Parser:
     
 #declaracao do FACA ENQUANTO, agora eles precisam existir ao mesmo tempo 
     def declaracao_faca_enquanto(self):
-        self.costume(TokenType.FACA, "Esperado FAC A depois de 'FACA'.")
+        self.costume(TokenType.FACA, "Esperado FACA")
 
-        faca_enquanto = self.declaracao()
+        self.costume (TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
 
+        body = []
+        #enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
+        
+        while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
+            body.append(self.declaracao())
+        #token de fechar token
+        self.costume (TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
 
-        self.costume(TokenType.ENQUANTO, "Esperado ENQUANTO depois de  FACA.")
+        self.costume(TokenType.ENQUANTO, "Esperado ENQUANTO depois de FACA.")
 
 
         self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
@@ -427,10 +434,12 @@ class Parser:
 
         self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' depois da 'CONDICAO'.")
 
+        self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois dos parenteses")
+
 
         return Faca_enquanto(
-                faca_enquanto,
-                condition
+                body,
+                condition,
         )
 
 
