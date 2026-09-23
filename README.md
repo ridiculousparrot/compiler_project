@@ -69,6 +69,7 @@ A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), 
 
 ```txt
 principal (){
+
  var x = 10;
 
  se (x > 5) {
@@ -97,6 +98,7 @@ principal (){
          print("dois");
          quebrar;
  }
+
 }
 ```
 
