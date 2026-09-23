@@ -131,7 +131,7 @@ Este projeto está sob a licença presente no arquivo [`LICENSE`](LICENSE).
 
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=20,11,6&height=100&section=footer" width="100%"/>
 
 ★ Um projeto de estudo — compiladores, autômatos e linguagens formais, um `token` de cada vez ★
 
