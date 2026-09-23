@@ -1,5 +1,5 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor
 
 class retornarException(Exception):
     def __init__(self, value):
@@ -29,6 +29,8 @@ class Interpretador:
             return self.visitar_variavel(expr)
         if isinstance(expr, Variable):
             return self.visitarVariableExpr(expr)
+        if isinstance(expr, Vetor):
+            return self.visitar_vetor(expr)
         if isinstance(expr, Atribuicao):
             return self.visitar_atribuicao(expr)
         if isinstance(expr, chamar):
@@ -237,8 +239,11 @@ class Interpretador:
 #visitar a condicao enquanto, se a condicao for verdadeira, executa o corpo do while, e repete o processo até que a condicao seja falsa
 
     def visitar_enquanto(self, stmt):
-        while self.seVerdadeiro(self.avaliar(stmt.condition)):
-            self.executar(stmt.body)
+         while True:
+                   for declaracao in stmt.body:
+                       self.executar(declaracao)
+                   if not self.seVerdadeiro(self.avaliar(stmt.condition)):
+                    break
 
 #visitar a condicao faca enquanto, quando executa o circulo do while, verrifica a condicao, se for verdadeira repetete o processo, caso falsa, encerra o loop
     def visitar_faca_enquanto(self, stmt):
@@ -417,3 +422,6 @@ class Interpretador:
                     self.executar(statement)
                 return None
         return None 
+
+    def visitar_vetor(self,expr):
+        return [self.avaliar(elements) for elements in expr.elements]

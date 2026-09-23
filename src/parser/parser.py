@@ -21,7 +21,8 @@ from src.parser.ast import (
     Atribuicao,
     chamar,
     Trocar,
-    Quebrar
+    Quebrar,
+    Vetor,
 )
 
 
@@ -125,7 +126,8 @@ class Parser:
         name = self.costume(TokenType.IDENTIFICADOR, "Esperado um identificador após a palavra reservada 'var'.")
         self.costume(TokenType.IGUAL_OUTRO, "Esperado '=' após o identificador.")
 
-        initializer = self.expressao()   
+        initializer = self.expressao()
+
         self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' após a declaração da variável.")
         return Var(name, initializer)
 
@@ -217,6 +219,17 @@ class Parser:
 
         if self.verificar_fim(TokenType.IDENTIFICADOR):
             return Variable(self.avancar())
+
+        if self.verificar_fim(TokenType.COLCHETES_ESQUERDO, "Esperado '[' apos a expressao."):
+            self.avancar()
+            elementos = []
+            if not self.verificar_fim(TokenType.COLCHETES_DIREITO):
+                elementos.append(self.expressao())
+            while self.parser_math(TokenType.VIRGULA):
+                elementos.append(self.expressao())
+            self.costume(TokenType.COLCHETES_DIREITO, "Esperado ']' depois da declaracao")
+            return Vetor(elementos)
+
 
         if self.verificar_fim(TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos a expressao :("):
             self.avancar()
@@ -396,7 +409,7 @@ class Parser:
 #declaracao do ENQUANTO, validando a sintaxe com os erros de esperado
 
     def declaracao_enquanto(self):
-        self.costume(TokenType.ENQUANTO, "Esperado 'ENQUANTO'.")
+        self.costume(TokenType.ENQUANTO, "Esperado 'Enquanto'.")
 
         self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
 
@@ -404,11 +417,18 @@ class Parser:
 
         self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' depois da 'CONDICAO'.")
 
-        enquanto = self.declaracao()
+        self.costume (TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
+        
+        body = []
+
+        while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
+            body.append(self.declaracao())
+                #token de fechar token
+        self.costume (TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
 
         return Enquanto(
                 condition,
-                enquanto
+                body
             )
     
 #declaracao do FACA ENQUANTO, agora eles precisam existir ao mesmo tempo 

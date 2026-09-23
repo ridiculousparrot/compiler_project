@@ -178,3 +178,6 @@ class Trocar(Declaracao):
 @dataclass(frozen= True)
 class Quebrar(Declaracao):
     pass
+@dataclass(frozen=True)
+class Vetor(Declaracao):
+    elements:list
