@@ -181,3 +181,7 @@ class Quebrar(Declaracao):
 @dataclass(frozen=True)
 class Vetor(Declaracao):
     elements:list
+
+@dataclass(frozen=True)
+class principal(Declaracao):
+    body: Bloco

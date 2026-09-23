@@ -1,5 +1,5 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor, principal
 
 class retornarException(Exception):
     def __init__(self, value):
@@ -9,9 +9,19 @@ class Interpretador:
     def __init__(self):
         #define o ambiente da linguagem e guarda espaco para declaracoes de variaveis
         self.ambiente = {}
+        self.tem_principal = False
 
     #cria a classse interpretador, que é responsável por avaliar e executar as expressões da linguagem.
+    def analisar_arvore_sintatica(self, statements):
+        encontrada = False
+        for declaracao in statements:
+         if isinstance(declaracao, principal):
+            if encontrada:
+                raise Exception("O programa não pode possuir mais de uma principal.")
+            encontrada = True
 
+        if not encontrada:
+         raise Exception("Erro semântico: o programa deve possuir uma main.")
 # avaliar, visitarExpressaoLiteral, visitarExpressaoAgrupada, visitarExpressaoUnaria, seVerdadeiro, 
 # visitarExpressaoBinaria servirao para avaliar e executar as expressões da linguagem, 
 # retornando os resultados correspondentes.
@@ -140,6 +150,8 @@ class Interpretador:
             return self.visitar_funcao(stmt)
         if isinstance(stmt, Trocar):
             return self.visitar_trocar(stmt)
+        if isinstance(stmt, principal):
+            return self.visitar_principal(stmt)
         if isinstance(stmt, Quebrar):
             return None
         raise Exception(f"Tipo de statement desconhecido: {type(stmt)}")
@@ -207,6 +219,9 @@ class Interpretador:
             if texto.endswith(".0"):
                 texto = texto[:-2]
             return texto
+
+        if isinstance(value, list):
+            return ',' .join(self.stringify(v) for v in value)
 
         return str(value)
 
@@ -425,3 +440,33 @@ class Interpretador:
 
     def visitar_vetor(self,expr):
         return [self.avaliar(elements) for elements in expr.elements]
+
+
+    
+
+    def visitar_principal (self, stmt):
+        self.executar(stmt.body)
+        
+
+
+    def visitar_programa(self, expr):
+     encontrou_principal = False
+
+     for declaracao in expr.declaracoes:
+
+        if isinstance(declaracao, principal):
+            if encontrou_principal:
+                raise Exception(
+                    "O programa não pode possuir mais de uma principal."
+                )
+
+            encontrou_principal = True
+
+     self.executar(declaracao)
+
+     if not encontrou_principal:
+        raise Exception(
+            "O programa deve possuir uma principal."
+        )
+
+        

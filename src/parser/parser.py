@@ -23,6 +23,7 @@ from src.parser.ast import (
     Trocar,
     Quebrar,
     Vetor,
+    principal,
 )
 
 
@@ -256,31 +257,6 @@ class Parser:
         return expr 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     #definimos agora as regras do parse dentro da atual rotatividade do sistema
     #define o estado statement como uma lista-array
     #intancia a funcao fim ja comentarta acima
@@ -348,6 +324,9 @@ class Parser:
             self.avancar()
             self.costume(TokenType.PONTO_VIRGULA, "esperado ';' depois de quebrar")
             return Quebrar()
+        if self.verificar_fim(TokenType.MAIN):
+            return self.declaracao_principal()
+        
         return self.estado()
 
 
@@ -494,25 +473,6 @@ class Parser:
         return chamar(calle, paren, argumentos)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #relativamente, essa foi a funcao mais complexa de se fazer,
 #a funcao declaracao funcao, vai trabalhar com os devidos tokens, funcao, parametro identificador, parenteses esquerdo e direito, 
 # chaves esquerdo e direito, e vai retornar a funcao com o nome, parametros e corpo da funcao
@@ -602,3 +562,17 @@ class Parser:
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'' depois do trocar.")
 
         return Trocar(condition, casos )
+
+
+    def declaracao_principal(self):
+        self.costume(TokenType.MAIN, "Esperado 'principal' de inicialização")
+        self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos 'principal'")
+        self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' apos '('")
+        self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{' apos os parenteses")
+
+        body = []
+        while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
+            body.append(self.declaracao())
+        self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'.")
+
+        return principal(Bloco(body))

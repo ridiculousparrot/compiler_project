@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 
 class TokenType(Enum):
+    MAIN = auto()
     # Palavra reservada para declaração de variáveis.
     # Exemplo: var x = 10;
     VARIAVEL = auto()
@@ -294,6 +295,8 @@ class Lexer:
             self.add_token(TokenType.TROCAR)
         elif text == "print":
             self.add_token(TokenType.PRINT)
+        elif text =="principal":
+            self.add_token(TokenType.MAIN)
         elif text == "caso":
             self.add_token(TokenType.CASO)
         else:
