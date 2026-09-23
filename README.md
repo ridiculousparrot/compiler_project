@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=190&section=header&text=Ludus&fontSize=70&fontColor=ffffff&animation=fadeIn&desc=Linguagem%20educacional%20para%20estudo%20de%20compiladores%20e%20linguagens%20formais&descAlignY=58&descSize=17" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=230&section=header&text=Ludus&fontSize=65&fontColor=ffffff&fontAlignY=32&animation=fadeIn&desc=Linguagem%20educacional%20para%20estudo%20de%20compiladores%20e%20linguagens%20formais&descAlignY=58&descSize=16" width="100%"/>
 
 <img src="https://readme-typing-svg.demolab.com/?font=Fira+Code&size=20&pause=1200&color=6C63FF&center=true&vCenter=true&width=680&lines=Um+projeto+de+introdu%C3%A7%C3%A3o+a+linguagens+formais+e+aut%C3%B4matos+%F0%9F%A7%A9;Construindo+um+compilador%2Finterpretador+passo+a+passo+%E2%9A%99%EF%B8%8F;Escrito+em+Python+%F0%9F%90%8D+%7C+Snapshot+atual%3A+v0.1.0" alt="Typing SVG" />
 
