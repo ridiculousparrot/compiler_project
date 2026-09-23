@@ -68,7 +68,7 @@ A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), 
 ## 💻 Exemplo de sintaxe
 
 ```txt
-principal (){
+principal() {
 
  var x = 10;
 
