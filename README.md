@@ -25,7 +25,7 @@
 
 A ideia central do projeto é **construir o compilador de forma incremental**: começando por um interpretador simples (lexer → parser → AST → execução) e evoluindo, aos poucos, rumo a conceitos mais formais — como definição de gramáticas, autômatos finitos e geração de código/bytecode — servindo como material de estudo prático para quem está aprendendo teoria da computação e construção de linguagens.
 
-> 🧩 Este snapshot representa a versão **v0.1.0** do projeto — as bases da linguagem já funcionam de ponta a ponta (lexer → parser → interpretador), e as próximas etapas vão aprofundar a parte formal (autômatos e geração de código).
+> 🧩 Este snapshot representa a versão **v0.1.1** do projeto — as bases da linguagem já funcionam de ponta a ponta (lexer → parser → interpretador), e as próximas etapas vão aprofundar a parte formal (autômatos e geração de código).
 
 ---
 
@@ -68,33 +68,35 @@ A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), 
 ## 💻 Exemplo de sintaxe
 
 ```txt
-var x = 10;
+principal (){
+ var x = 10;
 
-se (x > 5) {
-    print(x);
-} senao {
-    print(0);
-}
+ se (x > 5) {
+     print(x);
+ } senao {
+     print(0);
+ }
 
-enquanto (x > 0) {
-    x = x - 1;
-}
-
-faca {
-    x = x + 1;
-} enquanto (x < 10);
-
-funcao soma(a, b) {
-    retorno a + b;
-}
-
-trocar (x) {
-    caso 1:
-        print("um");
-        quebrar;
-    caso 2:
-        print("dois");
-        quebrar;
+ enquanto (x > 0) {
+     x = x - 1;
+ }
+ 
+ faca {
+     x = x + 1;
+ } enquanto (x < 10);
+ 
+ funcao soma(a, b) {
+     retorno a + b;
+ }
+ 
+ trocar (x) {
+     caso 1:
+         print("um");
+         quebrar;
+     caso 2:
+         print("dois");
+         quebrar;
+ }
 }
 ```
 
