@@ -37,52 +37,50 @@ class TokenType(Enum):
 
     SE = auto()
 
-    #define token da paralvra reservada para se  (if)
+    # define token da paralvra reservada para se  (if)
 
     SENAO = auto()
 
-    #define token da palavra senao (if)
+    # define token da palavra senao (if)
 
     FACA = auto()
 
-    #define token para faca (do)
+    # define token para faca (do)
 
     ENQUANTO = auto()
 
-    #define token para enquanto enquanto (while)
+    # define token para enquanto enquanto (while)
 
-    #define token para funcao (function)
+    # define token para funcao (function)
     FUNCAO = auto()
 
-    #define token para return (return)
+    # define token para return (return)
     RETORNO = auto()
 
-
-    #define token do switrch case (case), ou seja, trocar
+    # define token do switrch case (case), ou seja, trocar
     TROCAR = auto()
 
-    #define token do break, ou seja, quebrar o fluxo de execucao do switch case
+    # define token do break, ou seja, quebrar o fluxo de execucao do switch case
     QUEBRAR = auto()
-    
 
-#SEPARADORES, como ; , ( ) { } [ ]
+    # SEPARADORES, como ; , ( ) { } [ ]
 
-    #define token para abre parenteses direita )
+    # define token para abre parenteses direita )
     PARENTESES_DIREITO = auto()
-    #define token para abre parenteses esquerda (
+    # define token para abre parenteses esquerda (
     PARENTESES_ESQUERDO = auto()
-    #chaves para definir blocos de código, como em arrays ou listas.
+    # chaves para definir blocos de código, como em arrays ou listas.
     CHAVES_ESQUERDO = auto()
-    #chaves para definir blocos de código, como em arrays ou listas.
+    # chaves para definir blocos de código, como em arrays ou listas.
     CHAVES_DIREITO = auto()
-    #colchetes para definir blocos de código, como em arrays ou listas.
+    # colchetes para definir blocos de código, como em arrays ou listas.
     COLCHETES_ESQUERDO = auto()
-    #colchetes para definir blocos de código, como em arrays ou listas.
+    # colchetes para definir blocos de código, como em arrays ou listas.
     COLCHETES_DIREITO = auto()
-    #virgula para separar elementos em listas, arrays ou parâmetros de funções.
+    # virgula para separar elementos em listas, arrays ou parâmetros de funções.
     VIRGULA = auto()
 
-    PRINT = auto()
+    MOSTRAR = auto()
 
     PONTO_VIRGULA = auto()
 
@@ -90,9 +88,7 @@ class TokenType(Enum):
 
     CASO = auto()
 
-
-    
-#tokens de operadores, como +, -, *, /, =, ==, !=, >, <, >=, <=, !=
+    # tokens de operadores, como +, -, *, /, =, ==, !=, >, <, >=, <=, !=
 
     MAIS = auto()
 
@@ -131,7 +127,6 @@ class Token:
         return f"{self.type.name} {self.lexeme} {self.literal}"
 
 
-
 class Lexer:
     def __init__(self, source):
         self.source = source
@@ -161,7 +156,7 @@ class Lexer:
         char = self.source[self.current]
         self.current += 1
         return char
-    
+
     # aqui onde o método avancar é responsável por avançar o índice atual e retornar o caractere correspondente, permitindo que o lexer percorra o código fonte.
 
     def add_token(self, type_, literal=None):
@@ -252,8 +247,7 @@ class Lexer:
             self.line += 1
 
         else:
-            raise Exception(
-                f"Caractere inesperado na linha {self.line}: {char}")
+            raise Exception(f"Caractere inesperado na linha {self.line}: {char}")
 
         # valida se o caractere atual é uma letra ou um sublinhado, indicando o início de um identificador ou palavra reservada, ou se é um dígito, indicando o início de um número. Também verifica se o caractere é um operador ou separador, ou se é um espaço em branco ou nova linha, e trata cada caso adequadamente. Se encontrar um caractere inesperado, lança uma exceção.
 
@@ -293,9 +287,9 @@ class Lexer:
             self.add_token(TokenType.QUEBRAR)
         elif text == "trocar":
             self.add_token(TokenType.TROCAR)
-        elif text == "print":
-            self.add_token(TokenType.PRINT)
-        elif text =="principal":
+        elif text == "mostrar":
+            self.add_token(TokenType.MOSTRAR)
+        elif text == "principal":
             self.add_token(TokenType.MAIN)
         elif text == "caso":
             self.add_token(TokenType.CASO)
@@ -305,32 +299,31 @@ class Lexer:
             # define o indentificador, que percorre os caracteres alfanuméricos e sublinhados, avançando o índice atual até encontrar um caractere que não seja válido para um identificador. Em seguida, extrai o texto correspondente ao identificador e verifica se é uma palavra reservada (como "var" ou "if"), adicionando o token correspondente à lista de tokens. Se não for uma palavra reservada, adiciona um token do tipo IDENTIFIER.
 
             # classe lexer, que é responsável por analisar o código fonte e gerar os tokens correspondentes, utilizando métodos para identificar números, identificadores, operadores e separadores.
-        
-    def string (self):
 
-        #se o o consumo nao c
+    def string(self):
+
+        # se o o consumo nao c
         while not self.se_fim() and self.source[self.current] != '"':
-            if self.source[self.current] =="\n":
-                self.line +=1
+            if self.source[self.current] == "\n":
+                self.line += 1
             self.avancar()
 
         if self.se_fim():
             raise Exception(f"string inacabada na linha {self.line}")
 
-        valor = self.source[self.start + 1: self.current]
+        valor = self.source[self.start + 1 : self.current]
 
-        self.avancar() #consome a etapa de fechamento
+        self.avancar()  # consome a etapa de fechamento
 
         self.add_token(TokenType.STRING, valor)
 
-
-###FUNCAO SIMPPLES QUE COMBINA OS OPERADORES, JA QUE O LEXER LE APENAS UM TOKEN POR VEZ
+    ###FUNCAO SIMPPLES QUE COMBINA OS OPERADORES, JA QUE O LEXER LE APENAS UM TOKEN POR VEZ
 
     def combinar_operadores(self, esperado):
         if self.se_fim():
             return False
         if self.source[self.current] != esperado:
-            return False 
+            return False
 
         self.current += 1
         return True

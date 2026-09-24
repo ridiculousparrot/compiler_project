@@ -27,17 +27,16 @@ from src.parser.ast import (
 )
 
 
-
-class Parser:   
+class Parser:
     def __init__(self, tokens):
         # Inicializa o Parser com a lista de tokens.
         # Parâmetros:
         # - tokens: lista de tokens produzidos pelo lexer.
 
         self.tokens = tokens
-        self.current = 0    
+        self.current = 0
 
-    #Istancia o tokens e o valor por onde deve comecar a separacao incial, logo = 0
+    # Istancia o tokens e o valor por onde deve comecar a separacao incial, logo = 0
 
     def espiar(self):
         # Retorna o token atual sem avançar o cursor.
@@ -45,24 +44,24 @@ class Parser:
 
         return self.tokens[self.current]
 
-    #retorna valores dos tokens instanciados, caso nao tenha valor
-    
+    # retorna valores dos tokens instanciados, caso nao tenha valor
+
     def anterior(self):
         # Retorna o token imediatamente anterior ao atual.
         # Útil após `advance()` para recuperar o token recém-lido.
 
-        return self.tokens[self.current -1]
+        return self.tokens[self.current - 1]
 
-    #retorna o valor antigo do token, caso precise, logo o valor do token atual recebe -1
-    
+    # retorna o valor antigo do token, caso precise, logo o valor do token atual recebe -1
+
     def fim(self):
         # Retorna True se o token atual for o token de EOF.
         # Indica término da sequência de tokens.
 
         return self.espiar().type == TokenType.EOF
 
-    #marca o fim da tokenizacao, onde a quandidade de tokens objtidos e igual ao valor alocado.
-    
+    # marca o fim da tokenizacao, onde a quandidade de tokens objtidos e igual ao valor alocado.
+
     def avancar(self):
         # Avança para o próximo token e retorna o token anterior.
         # Se não chegar ao fim, incrementa `self.current`.
@@ -70,10 +69,10 @@ class Parser:
         if not self.fim():
             self.current += 1
 
-    #ao terminar a leitura e separacao de um token gerado ao lexer, parte para a proxima leitura
+        # ao terminar a leitura e separacao de um token gerado ao lexer, parte para a proxima leitura
 
         return self.anterior()
-    
+
     def verificar_fim(self, *types):
         # Verifica se o token atual é do tipo `type_`.
         # Retorna False se estivermos no fim dos tokens.
@@ -81,32 +80,32 @@ class Parser:
         if self.fim():
             return False
 
-    #verifica se a leitura dos tokens vundo do lexer terminaram
-        
-        return self.espiar().type in types
-    
-    def parser_math(self, *types):
-       # Tenta parsear uma expressão matemática.
-       # Implementação atual: percorre a coleção `types` em busca de um tipo
-       # correspondente e, se encontrado, avança e retorna True.
+        # verifica se a leitura dos tokens vundo do lexer terminaram
 
-       for type_ in types:
-           if self.verificar_fim(type_):
-               self.avancar()
-               return True
-       return False
-    
+        return self.espiar().type in types
+
+    def parser_math(self, *types):
+        # Tenta parsear uma expressão matemática.
+        # Implementação atual: percorre a coleção `types` em busca de um tipo
+        # correspondente e, se encontrado, avança e retorna True.
+
+        for type_ in types:
+            if self.verificar_fim(type_):
+                self.avancar()
+                return True
+        return False
+
     def costume(self, type_, message):
         # Consume um token do tipo esperado ou lança `parserError`.
         # Parâmetros:
         # - type_: tipo de token esperado.
         # - message: mensagem de erro caso o token não seja o esperado.
 
-            if self.verificar_fim(type_):
-                return self.avancar()
-        
-            raise parserError(self.espiar().line, message)
-    
+        if self.verificar_fim(type_):
+            return self.avancar()
+
+        raise parserError(self.espiar().line, message)
+
     def parser_gram(self):
         # Parseia a gramática de nível superior e retorna uma lista de statements.
         # Implementação atual: esqueleto que recolhe chamadas a `parser_math`.
@@ -118,53 +117,53 @@ class Parser:
 
         return statement
 
-
     def declaracao_variavel(self):
         # Parseia uma declaração de variável.
         # Fluxo esperado: identifica o nome, o operador de atribuição, a expressão inicializadora
         # portanto é um placeholder que precisa ser ajustado para construir o nó AST.
         self.costume(TokenType.VARIAVEL, "Esperado uma variavel()")
-        name = self.costume(TokenType.IDENTIFICADOR, "Esperado um identificador após a palavra reservada 'var'.")
+        name = self.costume(
+            TokenType.IDENTIFICADOR,
+            "Esperado um identificador após a palavra reservada 'var'.",
+        )
         self.costume(TokenType.IGUAL_OUTRO, "Esperado '=' após o identificador.")
 
         initializer = self.expressao()
 
-        self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' após a declaração da variável.")
+        self.costume(
+            TokenType.PONTO_VIRGULA, "Esperado ';' após a declaração da variável."
+        )
         return Var(name, initializer)
 
-# Parseia um termo numa expressão combinando fatores com operadores.
-        # Exemplo: lê um fator, então enquanto encontrar `*` ou `/` combina em uma
-        # estrutura `Binary`.
+    # Parseia um termo numa expressão combinando fatores com operadores.
+    # Exemplo: lê um fator, então enquanto encontrar `*` ou `/` combina em uma
+    # estrutura `Binary`.
 
     def unario(self):
         ##expressoes unarias trabaham apenas com uma expressao.
-                # Parseia um termo numa expressão combinando fatores com operadores.
-                # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
-                # estrutura `unario`.
+        # Parseia um termo numa expressão combinando fatores com operadores.
+        # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
+        # estrutura `unario`.
         if self.verificar_fim(TokenType.MAIS, TokenType.MENOS, TokenType.NEGACAO):
-                    
+
             operador = self.avancar()
             direita = self.chamada()
-        
+
             return Unary(operador, direita)
-                
 
         return self.chamada()
         ###unario
-  # ↓
-#encontrou "-"?
-   #↓ sim
-#operador = "-"
-  # ↓
-#lê outra expressão unária
-#   ↓
-#Unary("-", expressão)
 
-  
+    # ↓
+    # encontrou "-"?
+    # ↓ sim
+    # operador = "-"
+    # ↓
+    # lê outra expressão unária
+    #   ↓
+    # Unary("-", expressão)
 
-
-
-    def expressao(self):  
+    def expressao(self):
         # Ponto de entrada para parsear uma expressão; delega para `parser_math`.
         return self.atribuicao()
 
@@ -177,9 +176,11 @@ class Parser:
             if isinstance(expr, Variable):
                 return Atribuicao(expr.name, valor)
 
-            raise parserError(igual.line, "Atribuicao pode ser feitas em variaveis declaradas")
+            raise parserError(
+                igual.line, "Atribuicao pode ser feitas em variaveis declaradas"
+            )
 
-        return expr  
+        return expr
 
     def igualdade(self):
         expr = self.comparacao()
@@ -191,15 +192,17 @@ class Parser:
 
     def comparacao(self):
         expr = self.adicao()
-        while self.verificar_fim(TokenType.MAIOR,
-        TokenType.MAIOR_IGUAL,
-        TokenType.MENOR,
-        TokenType.MENOR_IGUAL):
-           operador = self.avancar()
-           direita = self.adicao()
-           expr = Binary(expr, operador, direita)
-        return expr 
-    
+        while self.verificar_fim(
+            TokenType.MAIOR,
+            TokenType.MAIOR_IGUAL,
+            TokenType.MENOR,
+            TokenType.MENOR_IGUAL,
+        ):
+            operador = self.avancar()
+            direita = self.adicao()
+            expr = Binary(expr, operador, direita)
+        return expr
+
     def adicao(self):
         expr = self.termo()
         while self.verificar_fim(TokenType.MAIS, TokenType.MENOS):
@@ -207,7 +210,6 @@ class Parser:
             direita = self.termo()
             expr = Binary(expr, operador, direita)
         return expr
-
 
     def fator(self):
         if self.verificar_fim(TokenType.NUMERO):
@@ -221,26 +223,29 @@ class Parser:
         if self.verificar_fim(TokenType.IDENTIFICADOR):
             return Variable(self.avancar())
 
-        if self.verificar_fim(TokenType.COLCHETES_ESQUERDO, "Esperado '[' apos a expressao."):
+        if self.verificar_fim(
+            TokenType.COLCHETES_ESQUERDO, "Esperado '[' apos a expressao."
+        ):
             self.avancar()
             elementos = []
             if not self.verificar_fim(TokenType.COLCHETES_DIREITO):
                 elementos.append(self.expressao())
             while self.parser_math(TokenType.VIRGULA):
                 elementos.append(self.expressao())
-            self.costume(TokenType.COLCHETES_DIREITO, "Esperado ']' depois da declaracao")
+            self.costume(
+                TokenType.COLCHETES_DIREITO, "Esperado ']' depois da declaracao"
+            )
             return Vetor(elementos)
 
-
-        if self.verificar_fim(TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos a expressao :("):
+        if self.verificar_fim(
+            TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos a expressao :("
+        ):
             self.avancar()
             expr = self.expressao()
             self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' após a expressão.")
             return Grouping(expr)
         raise parserError(self.espiar().line, "Esperado uma expressão.")
 
-
-  
     def termo(self):
         # Parseia um termo numa expressão combinando fatores com operadores.
         # Exemplo: lê um fator, então enquanto encontrar `+` ou `-` combina em uma
@@ -252,51 +257,49 @@ class Parser:
             operador = self.avancar()
             direita = self.unario()
 
-            expr = Binary(expr,operador,direita)
+            expr = Binary(expr, operador, direita)
 
-        return expr 
+        return expr
 
-
-    #definimos agora as regras do parse dentro da atual rotatividade do sistema
-    #define o estado statement como uma lista-array
-    #intancia a funcao fim ja comentarta acima
+    # definimos agora as regras do parse dentro da atual rotatividade do sistema
+    # define o estado statement como uma lista-array
+    # intancia a funcao fim ja comentarta acima
     def parse(self):
         statements = []
         while not self.fim():
             statements.append(self.declaracao())
-            #chama a funcao statment e retorna o valor que ele pega
-            #adiciona em uma lista chamada statement, na qual declaramos no inicio da funcao
+            # chama a funcao statment e retorna o valor que ele pega
+            # adiciona em uma lista chamada statement, na qual declaramos no inicio da funcao
         return statements
-    #retorna a lista statement
+
+    # retorna a lista statement
 
     def estado(self):
-     #chama a funcao estado que faz uma validacao
-     #se a validacao chamando a funcao math() tiver o valor retornado da funcao espiar
-     #retornar o valor do statement
-        if self.verificar_fim(TokenType.PRINT):
+        # chama a funcao estado que faz uma validacao
+        # se a validacao chamando a funcao math() tiver o valor retornado da funcao espiar
+        # retornar o valor do statement
+        if self.verificar_fim(TokenType.MOSTRAR):
             return self.mostrar_estado()
         return self.expressao_estado()
-    #retorna toda a construcao da lista statement
+
+    # retorna toda a construcao da lista statement
 
     def mostrar_estado(self):
-        #valor da expressao e chamado
-        #funcao costume retornando um erro de parser
-       self.costume(TokenType.PRINT, "Esperado 'print'.")
-       value = self.expressao()
-       self.costume(TokenType.PONTO_VIRGULA, "Eesperado ';'")
-       return Print(value)
-
+        # valor da expressao e chamado
+        # funcao costume retornando um erro de parser
+        self.costume(TokenType.MOSTRAR, "Esperado 'mostrar'.")
+        value = self.expressao()
+        self.costume(TokenType.PONTO_VIRGULA, "Eesperado ';'")
+        return Print(value)
 
     def expressao_estado(self):
-        #expressao tambem recebe um valor e retorna um erro de parser vindo do costume
+        # expressao tambem recebe um valor e retorna um erro de parser vindo do costume
         expr = self.expressao()
         self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
         return ExpressaoStatement(expr)
 
-
-        
-#temos aqui a funcao cuja retorna a declaracao da variavel
-#Necessario realizar a funcao de verificar fim para todos os tipos de tokens que podem ser declarados, como variavel, se, senao, enquanto e faca enquanto
+    # temos aqui a funcao cuja retorna a declaracao da variavel
+    # Necessario realizar a funcao de verificar fim para todos os tipos de tokens que podem ser declarados, como variavel, se, senao, enquanto e faca enquanto
 
     def declaracao(self):
         if self.verificar_fim(TokenType.VARIAVEL):
@@ -326,34 +329,37 @@ class Parser:
             return Quebrar()
         if self.verificar_fim(TokenType.MAIN):
             return self.declaracao_principal()
-        
-        return self.estado()
 
+        return self.estado()
 
     def primary(self):
         if self.parser_math(TokenType.IDENTIFICADOR):
             return Variable(self.anterior())
-        
-        #regra de atribuicao de valor em uma variavel, caso o token seja do tipo IDENTIFIER, ele retorna a variavel com o valor do token anterior
+
+        # regra de atribuicao de valor em uma variavel, caso o token seja do tipo IDENTIFIER, ele retorna a variavel com o valor do token anterior
+
     def atribuicao_varivavel(self):
-        #chama a funcao expressao para pegar o valor da expressao e verificar os tokens
+        # chama a funcao expressao para pegar o valor da expressao e verificar os tokens
         Expr = self.expressao()
-#se o token for do tipo equal, ele retorna o valor do token anterior e o valor da expressao, se for variavel, ele retorna o nome e o valor, 
-#caso no seja valor da variavel, ele retorna um erro de parser, informando que a atribuicao de valor pode ser feita apenas em variaveis declaradas
+        # se o token for do tipo equal, ele retorna o valor do token anterior e o valor da expressao, se for variavel, ele retorna o nome e o valor,
+        # caso no seja valor da variavel, ele retorna um erro de parser, informando que a atribuicao de valor pode ser feita apenas em variaveis declaradas
         if self.parser_math(TokenType.IGUAL_OUTRO):
             equals = self.anterior()
             value = self.atribuicao_variavel()
-# a funcao isinstance verifica se o objeto Expr é uma instância da classe Variable, ou seja, se Expr representa uma variável. Se for verdadeiro, 
-# ele cria e retorna um objeto Var com o nome da variável, o valor atribuído e o token de igualdade. Caso contrário, 
-# ele levanta um erro de parser informando que a atribuição de valor só pode ser feita em variáveis declaradas.
+            # a funcao isinstance verifica se o objeto Expr é uma instância da classe Variable, ou seja, se Expr representa uma variável. Se for verdadeiro,
+            # ele cria e retorna um objeto Var com o nome da variável, o valor atribuído e o token de igualdade. Caso contrário,
+            # ele levanta um erro de parser informando que a atribuição de valor só pode ser feita em variáveis declaradas.
             if isinstance(Expr, Variable):
                 return Var(Expr.name, value, equals)
 
-            raise parserError(equals.line, "atribuicao de valor pode ser feita apenas em variavies declaradas")
-#retorna toda expressao 
+            raise parserError(
+                equals.line,
+                "atribuicao de valor pode ser feita apenas em variavies declaradas",
+            )
+        # retorna toda expressao
         return Expr
 
-#funcao que parseia um bloco de codigo
+    # funcao que parseia um bloco de codigo
     def bloco(self):
         self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{'.")
         statements = []
@@ -362,8 +368,8 @@ class Parser:
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' após o bloco.")
         return Bloco(statements)
 
-#declaracao do SE, validando a sintaxe com os erros de esperado
-#retorna os valores de entao, senao e condicao
+    # declaracao do SE, validando a sintaxe com os erros de esperado
+    # retorna os valores de entao, senao e condicao
 
     def declaracao_se(self):
         self.costume(TokenType.SE, "Esperado 'se'. ")
@@ -380,54 +386,51 @@ class Parser:
         if self.parser_math(TokenType.SENAO):
             senao = self.declaracao()
 
-        return Se(
-            condition,
-            entao,
-            senao
-        )
-#declaracao do ENQUANTO, validando a sintaxe com os erros de esperado
+        return Se(condition, entao, senao)
+
+    # declaracao do ENQUANTO, validando a sintaxe com os erros de esperado
 
     def declaracao_enquanto(self):
         self.costume(TokenType.ENQUANTO, "Esperado 'Enquanto'.")
 
-        self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
+        self.costume(
+            TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'."
+        )
 
         condition = self.expressao()
 
         self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' depois da 'CONDICAO'.")
 
-        self.costume (TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
-        
+        self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
+
         body = []
 
         while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
             body.append(self.declaracao())
-                #token de fechar token
-        self.costume (TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
+            # token de fechar token
+        self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
 
-        return Enquanto(
-                condition,
-                body
-            )
-    
-#declaracao do FACA ENQUANTO, agora eles precisam existir ao mesmo tempo 
+        return Enquanto(condition, body)
+
+    # declaracao do FACA ENQUANTO, agora eles precisam existir ao mesmo tempo
     def declaracao_faca_enquanto(self):
         self.costume(TokenType.FACA, "Esperado FACA")
 
-        self.costume (TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
+        self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de faca")
 
         body = []
-        #enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
-        
+        # enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
+
         while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
             body.append(self.declaracao())
-        #token de fechar token
-        self.costume (TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
+        # token de fechar token
+        self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de faca")
 
         self.costume(TokenType.ENQUANTO, "Esperado ENQUANTO depois de FACA.")
 
-
-        self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'.")
+        self.costume(
+            TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'ENQUANTO'."
+        )
 
         condition = self.expressao()
 
@@ -435,19 +438,17 @@ class Parser:
 
         self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois dos parenteses")
 
-
         return Faca_enquanto(
-                body,
-                condition,
+            body,
+            condition,
         )
 
-
-### AS CHAMADAS PERMITEM QUE FAZERMOS AS FUNCOES DE UMA CHAMADA PARA ABERTURA DE UMA FUNCAO (PARAMETRO + PARAMETRO B)
-### JOGA EM LACO CASO ACHA O TOKEN DE PARENTESES
-## RETORNA RESULTADO DA EXPRESSAO VINDA DO FATOR
-# FINALIZAR CHAMADA DEFININDO ARGUMENTOS COMO UMA LISTA VAZIA, SE NAO TIVER TOKEN DE PARENTESES DIRETO, DA ERRO, MAS SE TIVER
-#FACILITA A LEITURA DO TOKEN ',' E DENTRO DELE SE ESPERA A DECLARACAO DA EXPRESSAO DENTRO DOS PARENTESESm RETORNANDO OS ARGUMENTOS, A CHAMADA 
-#E OS PARAMETROS
+    ### AS CHAMADAS PERMITEM QUE FAZERMOS AS FUNCOES DE UMA CHAMADA PARA ABERTURA DE UMA FUNCAO (PARAMETRO + PARAMETRO B)
+    ### JOGA EM LACO CASO ACHA O TOKEN DE PARENTESES
+    ## RETORNA RESULTADO DA EXPRESSAO VINDA DO FATOR
+    # FINALIZAR CHAMADA DEFININDO ARGUMENTOS COMO UMA LISTA VAZIA, SE NAO TIVER TOKEN DE PARENTESES DIRETO, DA ERRO, MAS SE TIVER
+    # FACILITA A LEITURA DO TOKEN ',' E DENTRO DELE SE ESPERA A DECLARACAO DA EXPRESSAO DENTRO DOS PARENTESESm RETORNANDO OS ARGUMENTOS, A CHAMADA
+    # E OS PARAMETROS
     def chamada(self):
         expr = self.fator()
 
@@ -461,8 +462,7 @@ class Parser:
         return expr
 
     def finalizar_chamada(self, calle):
-        argumentos = [
-        ]
+        argumentos = []
 
         if not self.verificar_fim(TokenType.PARENTESES_DIREITO):
             argumentos.append(self.expressao())
@@ -472,56 +472,48 @@ class Parser:
         paren = self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')'.")
         return chamar(calle, paren, argumentos)
 
-
-#relativamente, essa foi a funcao mais complexa de se fazer,
-#a funcao declaracao funcao, vai trabalhar com os devidos tokens, funcao, parametro identificador, parenteses esquerdo e direito, 
-# chaves esquerdo e direito, e vai retornar a funcao com o nome, parametros e corpo da funcao
+    # relativamente, essa foi a funcao mais complexa de se fazer,
+    # a funcao declaracao funcao, vai trabalhar com os devidos tokens, funcao, parametro identificador, parenteses esquerdo e direito,
+    # chaves esquerdo e direito, e vai retornar a funcao com o nome, parametros e corpo da funcao
     def declaracao_funcao(self):
 
         self.costume(TokenType.FUNCAO, "Esperado 'FUNCAO',")
 
-        name = self.costume(TokenType.IDENTIFICADOR, "Esperado um identificador depois de 'funcao'.")
+        name = self.costume(
+            TokenType.IDENTIFICADOR, "Esperado um identificador depois de 'funcao'."
+        )
 
         self.costume(TokenType.PARENTESES_ESQUERDO, "Esperado '(' depois de 'FUNCAO'.")
 
-#parametros nao sao obrigatorios, caso nao seja declarado, a lista de parametros sera vazia
+        # parametros nao sao obrigatorios, caso nao seja declarado, a lista de parametros sera vazia
         parametros = []
 
-#mas no caso se for declarado, ele vai verificar 
-# se o token e diferente de parenteses 
-# direito, caso seja diferente, ele vai adicionar o parametro na lista de parametros
+        # mas no caso se for declarado, ele vai verificar
+        # se o token e diferente de parenteses
+        # direito, caso seja diferente, ele vai adicionar o parametro na lista de parametros
         if not self.verificar_fim(TokenType.PARENTESES_DIREITO):
             parametros.append(
-            self.costume(
-                TokenType.IDENTIFICADOR,
-                "esperado nome do parametro"
+                self.costume(TokenType.IDENTIFICADOR, "esperado nome do parametro")
             )
-        )
-#virgula para separar os parametros, caso tenha mais de um, e vai adicionar na lista de parametros soma(a, b) exemplo
+        # virgula para separar os parametros, caso tenha mais de um, e vai adicionar na lista de parametros soma(a, b) exemplo
         while self.parser_math(TokenType.VIRGULA):
             parametros.append(
-                self.costume(
-                    TokenType.IDENTIFICADOR,
-                    "esperado nome do parametro."
-                )
+                self.costume(TokenType.IDENTIFICADOR, "esperado nome do parametro.")
             )
-#chama tokens da funcao, parenteses e chaves
+        # chama tokens da funcao, parenteses e chaves
         self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' depois de 'FUNCAO'.")
 
         self.costume(TokenType.CHAVES_ESQUERDO, "Esperado '{' depois de 'FUNCAO'.")
-#o corpo de uma funcao nao necessariamente precisa ter um valor, caso tenha recebera uma lista vazia
+        # o corpo de uma funcao nao necessariamente precisa ter um valor, caso tenha recebera uma lista vazia
         corpo = []
-#enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
+        # enquanto nao for o token de chaves direito, ele vai adicionar o corpo da funcao na lista de corpo
 
         while not self.verificar_fim(TokenType.CHAVES_DIREITO) and not self.fim():
-             corpo.append(self.declaracao())
-#token de fechar token
+            corpo.append(self.declaracao())
+        # token de fechar token
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}' depois de 'FUNCAO'.")
-#retorna a funcao com o nome, parametros e corpo da funcao
-        return funcao(
-            body=Bloco(corpo),
-            name = name,
-            parametros = parametros)
+        # retorna a funcao com o nome, parametros e corpo da funcao
+        return funcao(body=Bloco(corpo), name=name, parametros=parametros)
 
     def declaracao_retorno(self):
         self.costume(TokenType.RETORNO, "Esperado 'retorno'.")
@@ -530,7 +522,6 @@ class Parser:
             value = self.expressao()
             self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
         return retorno(value)
-
 
     def trocar_declaracao(self):
         self.costume(TokenType.TROCAR, "Esperado trocar")
@@ -546,23 +537,27 @@ class Parser:
         casos = []
 
         while self.verificar_fim(TokenType.CASO):
-            self.avancar() ###consome o caso
+            self.avancar()  ###consome o caso
 
-            valor = self.costume(TokenType.NUMERO, "Esperaodu um valor numerico depois de 'caso'. ")
+            valor = self.costume(
+                TokenType.NUMERO, "Esperaodu um valor numerico depois de 'caso'. "
+            )
 
             self.costume(TokenType.DOIS_PONTOS, "Esperado ':' depois do numero")
 
             statements = []
-####Encontrar prximo caso ou } de fechamentos
-            while not self.verificar_fim(TokenType.CASO, TokenType.CHAVES_DIREITO) and not self.fim():
+            ####Encontrar prximo caso ou } de fechamentos
+            while (
+                not self.verificar_fim(TokenType.CASO, TokenType.CHAVES_DIREITO)
+                and not self.fim()
+            ):
                 statements.append(self.declaracao())
 
-            casos.append ((valor.literal, statements))
+            casos.append((valor.literal, statements))
 
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'' depois do trocar.")
 
-        return Trocar(condition, casos )
-
+        return Trocar(condition, casos)
 
     def declaracao_principal(self):
         self.costume(TokenType.MAIN, "Esperado 'principal' de inicialização")

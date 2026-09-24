@@ -31,18 +31,19 @@ A ideia central do projeto é **construir o compilador de forma incremental**: c
 
 ## ✨ Funcionalidades suportadas
 
-| Ícone | Recurso | Palavra-chave |
-|:---:|---|---|
-| 📦 | Declaração de variáveis | `var` |
-| ➕ | Atribuição e expressões aritméticas | `=`, `+`, `-`, `*`, `/` |
-| ⚖️ | Operadores de comparação e igualdade | `>`, `<`, `==`, `!=` |
-| 🔀 | Estruturas condicionais | `se` / `senao` |
-| 🔁 | Laço de repetição (pré-teste) | `enquanto` |
-| 🔂 | Laço de repetição (pós-teste) | `faca ... enquanto` |
-| 🎛️ | Estrutura de múltipla escolha | `trocar` / `caso` / `quebrar` |
-| 🧠 | Declaração de funções | `funcao` |
-| 📤 | Retorno de valores | `retorno` |
-| 🖨️ | Comando de saída | `print` |
+| Ícone | Recurso                              | Palavra-chave                 |
+| :---: | ------------------------------------ | ----------------------------- |
+|  🎮   | Entrada do programa                  | `principal(){}`               |
+|  📦   | Declaração de variáveis e vetores    | `var`                         |
+|  ➕   | Atribuição e expressões aritméticas  | `=`, `+`, `-`, `*`, `/`       |
+|  ⚖️   | Operadores de comparação e igualdade | `>`, `<`, `==`, `!=`          |
+|  🔀   | Estruturas condicionais              | `se` / `senao`                |
+|  🔁   | Laço de repetição (pré-teste)        | `enquanto`                    |
+|  🔂   | Laço de repetição (pós-teste)        | `faca ... enquanto`           |
+|  🎛️   | Estrutura de múltipla escolha        | `trocar` / `caso` / `quebrar` |
+|  🧠   | Declaração de funções                | `funcao`                      |
+|  📤   | Retorno de valores                   | `retorno`                     |
+|  🖨️   | Comando de saída                     | `mostrar`                     |
 
 A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), que monta um código de exemplo para testar a linguagem de ponta a ponta.
 
@@ -67,38 +68,58 @@ A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), 
 
 ## 💻 Exemplo de sintaxe
 
-```txt
+```ludus
+funcao somar(a, b) {
+    retorno a + b;
+}
+
+funcao maior(a, b) {
+    se (a > b) {
+        retorno a;
+    } senao {
+        retorno b;
+    }
+}
+
 principal() {
 
- var x = 10;
+    var numeros = [10, 20, 30, 40, 50];
 
- se (x > 5) {
-     print(x);
- } senao {
-     print(0);
- }
+    mostrar("=== LUDUS ===");
+    mostrar("Vetor criado:");
+    mostrar(numeros);
 
- enquanto (x > 0) {
-     x = x - 1;
- }
- 
- faca {
-     x = x + 1;
- } enquanto (x < 10);
- 
- funcao soma(a, b) {
-     retorno a + b;
- }
- 
- trocar (x) {
-     caso 1:
-         print("um");
-         quebrar;
-     caso 2:
-         print("dois");
-         quebrar;
- }
+    var x = 10;
 
+    se (x > 5) {
+        mostrar("x e maior que 5");
+    } senao {
+        mostrar("x nao e maior que 5");
+    }
+
+    enquanto (x > 5) {
+        x = x - 1;
+    }
+
+    mostrar("Valor de x:");
+    mostrar(x);
+
+    var resultado = somar(7, 8);
+
+    mostrar("Resultado da soma:");
+    mostrar(resultado);
+
+    var maior_valor = maior(25, 42);
+
+    mostrar("Maior valor:");
+    mostrar(maior_valor);
+
+    faca {
+        x = x + 1;
+    } enquanto (x < 10);
+
+    mostrar("Valor final de x:");
+    mostrar(x);
 }
 ```
 
@@ -128,6 +149,14 @@ Esse comando dispara o fluxo completo:
 - 📝 Este README foi escrito com base no código presente no repositório e nos exemplos já implementados.
 
 ---
+
+## 🚧 Changelog
+
+- **v0.1.1** (2024-06-15)
+  - Incrementação de "principal(){}" como main para comecar o bloco de codigo
+  - Adicao de vetores para trabalhar com estrutura de dados
+  - Estrutura do enquanto ja corrigida de bugs
+  - Atualizado README com informações sobre o novo comando.
 
 ## 📜 Licença
 

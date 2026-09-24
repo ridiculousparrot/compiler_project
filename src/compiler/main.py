@@ -2,7 +2,7 @@ from src.lexer.lexer import Lexer
 from src.parser.parser import Parser
 from src.semantic.analyzer import Interpretador
 
-#PARA TESTAR -------------
+# PARA TESTAR -------------
 ##// Declaração simples
 ##var x = 10;
 
@@ -14,9 +14,9 @@ from src.semantic.analyzer import Interpretador
 
 ##// Condicional (SE / SENAO)
 ##se (x > 5) {
-##    print(x);
+##    mostrar(x);
 ##} senao {
-##    print(0);
+##    mostrar(0);
 ##}
 
 ##// Laço ENQUANTO
@@ -37,33 +37,33 @@ from src.semantic.analyzer import Interpretador
 ##// Switch / case (TROCAR / QUEBRAR)
 ##trocar (x) {
 ##    caso 1:
-##        print("um");
+##        mostrar("um");
 ##        quebrar;
 ##    caso 2:
- ##       print("dois");
- ##       quebrar;
+##       mostrar("dois");
+##       quebrar;
 ##}
 
 ##// Comparações e diferente
 ##se (x != 10) {
-##    print("diferente");
+##    mostrar("diferente");
 ##}
 
 
-##//faca enquanto e enquanto 
+##//faca enquanto e enquanto
 
-#var x = 0;
-#faca {
-  #  print("Executando");
- #   x = x + 1;
-#} enquanto (x < 10);
+# var x = 0;
+# faca {
+#  mostrar("Executando");
+#   x = x + 1;
+# } enquanto (x < 10);
 #
 
 """
 x = 10;
 
 enquanto (x <10) {
-print ("FUNCIONANDO");
+mostrar ("FUNCIONANDO");
 x = x + 1;
 
 
@@ -71,7 +71,7 @@ x = x + 1;
 
 
 x = 10, 9, 8 7;
-print(x);
+mostrar(x);
 }
 
 """
@@ -79,10 +79,66 @@ print(x);
 
 def main():
     codigo = """
- 
-        var x = [1, 2, 3];
-        print(x);
-  
+
+funcao somar(a, b) {
+    retorno a + b;
+}
+
+funcao maior(a, b) {
+    se (a > b) {
+        retorno a;
+    } senao {
+        retorno b;
+    }
+}
+
+principal() {
+
+    var numeros = [10, 20, 30, 40, 50];
+
+    mostrar("=== LUDUS ===");
+
+    mostrar("Vetor criado:");
+
+    mostrar(numeros);
+
+    var x = 10;
+
+    se (x > 5) {
+        mostrar("x e maior que 5");
+    } senao {
+        mostrar("x nao e maior que 5");
+    }
+
+    enquanto (x > 5) {
+        x = x - 1;
+    }
+
+    mostrar("Valor de x:");
+
+    mostrar(x);
+
+    var resultado = somar(7, 8);
+
+    mostrar("Resultado da soma:");
+
+    mostrar(resultado);
+
+    var maior_valor = maior(25, 42);
+
+    mostrar("Maior valor:");
+
+    mostrar(maior_valor);
+
+    faca {
+        x = x + 1;
+    } enquanto (x < 10);
+
+    mostrar("Valor final de x:");
+
+    mostrar(x);
+
+}
     """
 
     # Lexer
@@ -95,12 +151,12 @@ def main():
 
     # Interpretador
     interpretador = Interpretador()
-    interpretador.analisar_arvore_sintatica(statements) 
+    interpretador.analisar_arvore_sintatica(statements)
     for stmt in statements:
         resultado = interpretador.executar(stmt)
     if resultado is not None:
         print(interpretador.stringify(resultado))
 
+
 if __name__ == "__main__":
     main()
-
