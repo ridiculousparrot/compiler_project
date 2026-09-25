@@ -158,7 +158,7 @@ Esse comando dispara o fluxo completo:
   - Estrutura do enquanto ja corrigida de bugs
   - Atualizado README com informações sobre o novo comando.
 
-  - **v0.1.2** (2026-8-25)
+- **v0.1.2** (2026-8-25)
   - Adicionamos uma IDE de teste rapida para facilitar o trabalho de testes.
   - Vetores possuem indices, ajudando a trabalhar com expressoes e indices dentro dele.
   - bugs corrigidos.
