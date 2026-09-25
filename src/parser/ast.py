@@ -185,3 +185,10 @@ class Vetor(Declaracao):
 @dataclass(frozen=True)
 class principal(Declaracao):
     body: Bloco
+
+
+@dataclass(frozen=True)
+class AcessarVetor():
+    value: Expr
+    index: Expr
+

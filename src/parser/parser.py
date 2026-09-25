@@ -24,6 +24,7 @@ from src.parser.ast import (
     Quebrar,
     Vetor,
     principal,
+    AcessarVetor
 )
 
 
@@ -212,39 +213,52 @@ class Parser:
         return expr
 
     def fator(self):
-        if self.verificar_fim(TokenType.NUMERO):
-            token = self.avancar()
-            return Literal(token.literal)
+     if self.verificar_fim(TokenType.NUMERO):
+        token = self.avancar()
+        return Literal(token.literal)
 
-        if self.verificar_fim(TokenType.STRING):
-            token = self.avancar()
-            return Literal(token.literal)
+     if self.verificar_fim(TokenType.STRING):
+        token = self.avancar()
+        return Literal(token.literal)
 
-        if self.verificar_fim(TokenType.IDENTIFICADOR):
-            return Variable(self.avancar())
+     if self.verificar_fim(TokenType.IDENTIFICADOR):
+        return Variable(self.avancar())
 
-        if self.verificar_fim(
-            TokenType.COLCHETES_ESQUERDO, "Esperado '[' apos a expressao."
-        ):
-            self.avancar()
-            elementos = []
-            if not self.verificar_fim(TokenType.COLCHETES_DIREITO):
-                elementos.append(self.expressao())
-            while self.parser_math(TokenType.VIRGULA):
-                elementos.append(self.expressao())
-            self.costume(
-                TokenType.COLCHETES_DIREITO, "Esperado ']' depois da declaracao"
-            )
-            return Vetor(elementos)
+     if self.verificar_fim(TokenType.COLCHETES_ESQUERDO):
+        self.avancar()
 
-        if self.verificar_fim(
-            TokenType.PARENTESES_ESQUERDO, "Esperado '(' apos a expressao :("
-        ):
-            self.avancar()
-            expr = self.expressao()
-            self.costume(TokenType.PARENTESES_DIREITO, "Esperado ')' após a expressão.")
-            return Grouping(expr)
-        raise parserError(self.espiar().line, "Esperado uma expressão.")
+        elementos = []
+
+        if not self.verificar_fim(TokenType.COLCHETES_DIREITO):
+            elementos.append(self.expressao())
+
+        while self.parser_math(TokenType.VIRGULA):
+            elementos.append(self.expressao())
+
+        self.costume(
+            TokenType.COLCHETES_DIREITO,
+            "Esperado ']' depois da declaração"
+        )
+
+        return Vetor(elementos)
+
+     if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
+        self.avancar()
+
+        expr = self.expressao()
+
+        self.costume(
+            TokenType.PARENTESES_DIREITO,
+            "Esperado ')' após a expressão."
+        )
+
+        return Grouping(expr)
+
+     raise parserError(
+        self.espiar().line,
+        "Esperado uma expressão."
+    )
+
 
     def termo(self):
         # Parseia um termo numa expressão combinando fatores com operadores.
@@ -450,16 +464,33 @@ class Parser:
     # FACILITA A LEITURA DO TOKEN ',' E DENTRO DELE SE ESPERA A DECLARACAO DA EXPRESSAO DENTRO DOS PARENTESESm RETORNANDO OS ARGUMENTOS, A CHAMADA
     # E OS PARAMETROS
     def chamada(self):
-        expr = self.fator()
+     expr = self.fator()
 
-        while True:
-            if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
-                self.avancar()
-                expr = self.finalizar_chamada(expr)
-            else:
-                break
+     while True:
+        if self.verificar_fim(TokenType.PARENTESES_ESQUERDO):
+            self.avancar()
+            expr = self.finalizar_chamada(expr)
 
-        return expr
+        elif self.verificar_fim(TokenType.COLCHETES_ESQUERDO):
+            self.avancar()
+
+            index = self.expressao()
+
+            self.costume(
+                TokenType.COLCHETES_DIREITO,
+                "Esperado ']' depois do índice."
+            )
+
+            expr = AcessarVetor(
+                expr,
+                index
+            )
+
+        else:
+            break
+
+     return expr
+
 
     def finalizar_chamada(self, calle):
         argumentos = []
@@ -571,3 +602,6 @@ class Parser:
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'.")
 
         return principal(Bloco(body))
+
+    
+

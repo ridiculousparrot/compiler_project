@@ -1,4 +1,3 @@
-
 import io
 import os
 import re
@@ -50,6 +49,132 @@ PALAVRAS_CHAVE = [
 
 FONTE_EDITOR = ("Consolas", 12)
 FONTE_CONSOLE = ("Consolas", 10)
+
+
+# ----------------------------------------------------------------------
+# Documentação da linguagem LUDUS
+# ----------------------------------------------------------------------
+DOCUMENTACAO_LUDUS = """# Documentação da Linguagem LUDUS
+
+## 1. Variáveis
+
+Declaração simples:
+
+    var x = 10;
+
+Expressão com operadores:
+
+    var soma = 5 + 3 * 2;
+
+String:
+
+    var nome = "Pedro";
+
+## 2. Condicional (SE / SENAO)
+
+    se (x > 5) {
+        mostrar(x);
+    } senao {
+        mostrar(0);
+    }
+
+## 3. Laço ENQUANTO (while)
+
+    enquanto (x > 0) {
+        x = x - 1;
+    }
+
+## 4. Laço FACA ... ENQUANTO (do-while)
+
+    faca {
+        x = x + 1;
+    } enquanto (x < 10);
+
+## 5. Funções e retorno
+
+    funcao soma(a, b) {
+        retorno a + b;
+    }
+
+## 6. TROCAR / CASO / QUEBRAR (switch/case)
+
+    trocar (x) {
+        caso 1:
+            mostrar("um");
+            quebrar;
+        caso 2:
+            mostrar("dois");
+            quebrar;
+    }
+
+## 7. Comparações
+
+Operadores suportados: >, <, >=, <=, ==, != (diferente)
+
+    se (x != 10) {
+        mostrar("diferente");
+    }
+
+## 8. Listas / Vetores
+
+    var numeros = [10, 20, 30, 40, 50];
+    var y = numeros[0] + numeros[1];
+    mostrar(y);
+
+## 9. Função principal
+
+Todo programa LUDUS pode iniciar por uma função especial `principal`:
+
+    principal() {
+        mostrar("Ola Mundo!");
+    }
+
+## 10. Comentários
+
+Comentários de linha podem ser feitos com `//` ou `##`:
+
+    // isto é um comentário
+    ## isto também é um comentário
+
+## 11. Palavras reservadas
+
+var, se, senao, enquanto, faca, funcao, retorno, trocar, caso, quebrar,
+mostrar, principal, verdadeiro, falso, nulo, e, ou, nao
+
+## 12. Exemplo completo
+
+    principal() {
+
+        var x = 10;
+
+        se (x > 5) {
+            mostrar(x);
+        } senao {
+            mostrar(0);
+        }
+
+        enquanto (x > 0) {
+            x = x - 1;
+        }
+
+        faca {
+            x = x + 1;
+        } enquanto (x < 10);
+
+        funcao soma(a, b) {
+            retorno a + b;
+        }
+
+        trocar (x) {
+            caso 1:
+                mostrar("um");
+                quebrar;
+            caso 2:
+                mostrar("dois");
+                quebrar;
+        }
+    }
+"""
 
 
 class LinhaNumerada(tk.Canvas):
@@ -359,19 +484,75 @@ class _EscritorConsole(io.TextIOBase):
         pass
 
 
+class JanelaDocumentacao(tk.Toplevel):
+    """Janela com a documentação da linguagem LUDUS e opção de download."""
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Documentação — LUDUS")
+        self.geometry("760x620")
+        self.configure(bg=COR_FUNDO_JANELA)
+        self.transient(master)
+
+        topo = tk.Frame(self, bg=COR_FUNDO_JANELA)
+        topo.pack(side="top", fill="x")
+
+        tk.Label(topo, text="Documentação da Linguagem LUDUS",
+                 bg=COR_FUNDO_JANELA, font=("Segoe UI", 11, "bold")
+                 ).pack(side="left", padx=10, pady=8)
+
+        tk.Button(topo, text="💾 Baixar documentação", command=self._baixar,
+                  bg="#DCE6F1", relief="raised", bd=1,
+                  font=("Segoe UI", 9), padx=8, pady=3, cursor="hand2"
+                  ).pack(side="right", padx=10, pady=6)
+
+        corpo = tk.Frame(self, bg=COR_FUNDO_JANELA)
+        corpo.pack(side="top", fill="both", expand=True, padx=8, pady=(0, 8))
+
+        scroll = ttk.Scrollbar(corpo, orient="vertical")
+        self.texto = tk.Text(
+            corpo, wrap="word", bg="#FFFFFF", fg="#000000",
+            font=("Consolas", 11), padx=10, pady=10,
+            yscrollcommand=scroll.set, borderwidth=0, highlightthickness=0
+        )
+        scroll.config(command=self.texto.yview)
+        scroll.pack(side="right", fill="y")
+        self.texto.pack(side="left", fill="both", expand=True)
+
+        self.texto.insert("1.0", DOCUMENTACAO_LUDUS)
+        self.texto.configure(state="disabled")
+
+    def _baixar(self):
+        caminho = filedialog.asksaveasfilename(
+            title="Salvar documentação como...",
+            defaultextension=".md",
+            initialfile="documentacao_ludus.md",
+            filetypes=[("Markdown", "*.md"), ("Texto", "*.txt"),
+                       ("Todos os arquivos", "*.*")]
+        )
+        if not caminho:
+            return
+        try:
+            with open(caminho, "w", encoding="utf-8") as f:
+                f.write(DOCUMENTACAO_LUDUS)
+            messagebox.showinfo("Documentação",
+                                 f"Documentação salva em:\n{caminho}")
+        except Exception as e:
+            messagebox.showerror("Erro ao salvar",
+                                  f"Não foi possível salvar o arquivo:\n{e}")
+
+
 class IDELudus(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("LUDUS IDE — Novo Projeto")
         self.geometry("1100x720")
-        icone = self.caminho_recurso("ludus.ico")
-
-
         self.configure(bg=COR_FUNDO_JANELA)
 
         self.caminho_arquivo = None
         self._modificado = False
 
+        self._carregar_icone()
         self._montar_menu()
         self._montar_toolbar()
         self._montar_corpo()
@@ -398,17 +579,55 @@ class IDELudus(tk.Tk):
 
         self.editor.definir_codigo(exemplo)
 
-    # ---------------------------------------------------------- menu
+    # ---------------------------------------------------------- ícone
 
-    
     def caminho_recurso(self, nome):
-     if getattr(sys, "frozen", False):
-        pasta = sys._MEIPASS
-     else:
-        pasta = os.path.dirname(os.path.abspath(__file__))
+        if getattr(sys, "frozen", False):
+            pasta = sys._MEIPASS
+        else:
+            pasta = os.path.dirname(os.path.abspath(__file__))
 
-     return os.path.join(pasta, nome)
+        return os.path.join(pasta, nome)
 
+    def _carregar_icone(self):
+        """Carrega o ícone da janela.
+
+        tk.PhotoImage NÃO suporta o formato .ico (só GIF/PGM/PPM/PNG), por
+        isso o ícone nunca aparecia. Para .ico o correto é usar
+        self.iconbitmap(), que só funciona no Windows. Em Linux/Mac,
+        tentamos primeiro um ludus.png (se existir) via iconphoto.
+        """
+        caminho_ico = self.caminho_recurso("ludus.ico")
+        caminho_png = self.caminho_recurso("ludus.png")
+
+        try:
+            if sys.platform.startswith("win"):
+                if os.path.exists(caminho_ico):
+                    self.iconbitmap(caminho_ico)
+                elif os.path.exists(caminho_png):
+                    self.icone_janela = tk.PhotoImage(file=caminho_png)
+                    self.iconphoto(True, self.icone_janela)
+                else:
+                    print(f"Ícone não encontrado: {caminho_ico}")
+            else:
+                # Linux / macOS: PhotoImage não lê .ico
+                if os.path.exists(caminho_png):
+                    self.icone_janela = tk.PhotoImage(file=caminho_png)
+                    self.iconphoto(True, self.icone_janela)
+                elif os.path.exists(caminho_ico):
+                    # Última tentativa (pode falhar dependendo do Tk/tema)
+                    self.iconbitmap(f"@{caminho_ico}") if caminho_ico.endswith(".xbm") else None
+                    print(
+                        "Aviso: em Linux/macOS use um 'ludus.png' junto do "
+                        "script/executável para o ícone da janela aparecer "
+                        "(arquivos .ico não são suportados aqui)."
+                    )
+                else:
+                    print(f"Ícone não encontrado: {caminho_png}")
+        except Exception as e:
+            print(f"Não foi possível carregar o ícone: {e}")
+
+    # ---------------------------------------------------------- menu
     def _montar_menu(self):
         barra = tk.Menu(self)
 
@@ -432,6 +651,9 @@ class IDELudus(tk.Tk):
         barra.add_cascade(label="Executar", menu=m_exec)
 
         m_ajuda = tk.Menu(barra, tearoff=0)
+        m_ajuda.add_command(label="Documentação da Linguagem",
+                             command=self.abrir_documentacao)
+        m_ajuda.add_separator()
         m_ajuda.add_command(label="Sobre", command=self._sobre)
         barra.add_cascade(label="Ajuda", menu=m_ajuda)
 
@@ -457,6 +679,8 @@ class IDELudus(tk.Tk):
         botao("▶ Executar (F5)", self.executar, cor="#DFF0D8")
         tk.Frame(tb, width=2, bg="#BFBFBF").pack(side="left", fill="y", padx=6, pady=6)
         botao("🧹 Limpar console", lambda: self.console.limpar())
+        tk.Frame(tb, width=2, bg="#BFBFBF").pack(side="left", fill="y", padx=6, pady=6)
+        botao("📘 Documentação", self.abrir_documentacao, cor="#FFF2CC")
 
     # ---------------------------------------------------------- corpo
     def _montar_corpo(self):
@@ -550,6 +774,10 @@ class IDELudus(tk.Tk):
             "LUDUS IDE\nAmbiente gráfico para a linguagem LUDUS.\n"
             "Compilador: Lexer + Parser + Interpretador (src/)."
         )
+
+    def abrir_documentacao(self):
+        """Abre a janela de documentação da linguagem LUDUS."""
+        JanelaDocumentacao(self)
 
     def _avisar_erro_import(self):
         self.console.escrever(

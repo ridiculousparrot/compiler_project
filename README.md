@@ -25,7 +25,7 @@
 
 A ideia central do projeto é **construir o compilador de forma incremental**: começando por um interpretador simples (lexer → parser → AST → execução) e evoluindo, aos poucos, rumo a conceitos mais formais — como definição de gramáticas, autômatos finitos e geração de código/bytecode — servindo como material de estudo prático para quem está aprendendo teoria da computação e construção de linguagens.
 
-> 🧩 Este snapshot representa a versão **v0.1.1** do projeto — as bases da linguagem já funcionam de ponta a ponta (lexer → parser → interpretador), e as próximas etapas vão aprofundar a parte formal (autômatos e geração de código).
+> 🧩 Este snapshot representa a versão **v0.1.2** do projeto — as bases da linguagem já funcionam de ponta a ponta (lexer → parser → interpretador), e as próximas etapas vão aprofundar a parte formal (autômatos e geração de código).
 
 ---
 
@@ -45,7 +45,7 @@ A ideia central do projeto é **construir o compilador de forma incremental**: c
 |  📤   | Retorno de valores                   | `retorno`                     |
 |  🖨️   | Comando de saída                     | `mostrar`                     |
 
-A execução principal está em [`src/compiler/main.py`](src/compiler/main.py), que monta um código de exemplo para testar a linguagem de ponta a ponta.
+A execução principal está em [`dist/LUDUS.exe`](dist/LUDUS.exe), que executa um IDE que esta sendo utilizado como teste da linguagem.
 
 ---
 
@@ -152,11 +152,17 @@ Esse comando dispara o fluxo completo:
 
 ## 🚧 Changelog
 
-- **v0.1.1** (2024-06-15)
+- **v0.1.1** (2026-06-15)
   - Incrementação de "principal(){}" como main para comecar o bloco de codigo
   - Adicao de vetores para trabalhar com estrutura de dados
   - Estrutura do enquanto ja corrigida de bugs
   - Atualizado README com informações sobre o novo comando.
+
+  - **v0.1.2** (2026-8-25)
+  - Adicionamos uma IDE de teste rapida para facilitar o trabalho de testes.
+  - Vetores possuem indices, ajudando a trabalhar com expressoes e indices dentro dele.
+  - bugs corrigidos.
+  - Herobrine removido.
 
 ## 📜 Licença
 

@@ -1,5 +1,5 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor, principal
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor, principal, AcessarVetor
 
 class retornarException(Exception):
     def __init__(self, value):
@@ -45,6 +45,8 @@ class Interpretador:
             return self.visitar_atribuicao(expr)
         if isinstance(expr, chamar):
             return self.visitar_chamar(expr)
+        if isinstance(expr, AcessarVetor):
+            return self.visitar_vetor_individual(expr)
 
         raise Exception(f"Tipo de expressão desconhecido: {type(expr)}")
 
@@ -468,5 +470,26 @@ class Interpretador:
         raise Exception(
             "O programa deve possuir uma principal."
         )
+
+
+    def visitar_vetor_individual(self, expr):
+        vetor = self.avaliar(expr.value)
+        index = self.avaliar(expr.index)
+
+        if vetor == None:
+            raise Exception(
+                "Valor nao encontrado dentro de tal vetor x"
+            )
+        if not isinstance(index, int):
+            raise Exception(
+                "Valor nao permitido para indexação"
+            )
+
+        if index < 0 or index >= len(vetor):
+         raise Exception(
+            "Índice fora dos limites do vetor"
+        )
+
+        return vetor[index]
 
         

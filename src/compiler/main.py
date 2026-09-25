@@ -80,64 +80,13 @@ mostrar(x);
 def main():
     codigo = """
 
-funcao somar(a, b) {
-    retorno a + b;
-}
-
-funcao maior(a, b) {
-    se (a > b) {
-        retorno a;
-    } senao {
-        retorno b;
-    }
-}
-
 principal() {
 
     var numeros = [10, 20, 30, 40, 50];
 
-    mostrar("=== LUDUS ===");
+    var y = numeros[0] + numeros[1];
 
-    mostrar("Vetor criado:");
-
-    mostrar(numeros);
-
-    var x = 10;
-
-    se (x > 5) {
-        mostrar("x e maior que 5");
-    } senao {
-        mostrar("x nao e maior que 5");
-    }
-
-    enquanto (x > 5) {
-        x = x - 1;
-    }
-
-    mostrar("Valor de x:");
-
-    mostrar(x);
-
-    var resultado = somar(7, 8);
-
-    mostrar("Resultado da soma:");
-
-    mostrar(resultado);
-
-    var maior_valor = maior(25, 42);
-
-    mostrar("Maior valor:");
-
-    mostrar(maior_valor);
-
-    faca {
-        x = x + 1;
-    } enquanto (x < 10);
-
-    mostrar("Valor final de x:");
-
-    mostrar(x);
-
+    mostrar(y);
 }
     """
 
