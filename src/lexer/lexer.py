@@ -114,6 +114,7 @@ class TokenType(Enum):
 
     NEGACAO = auto()
 
+    QUACK = auto()
 
 # classe token, que representa cada token encontrado no código fonte, com seu tipo, lexema, valor literal e número da linha onde foi encontrado.
 @dataclass
@@ -291,6 +292,8 @@ class Lexer:
             self.add_token(TokenType.MOSTRAR)
         elif text == "principal":
             self.add_token(TokenType.MAIN)
+        elif text == "quack!":
+            self.add_token(TokenType.QUACK)
         elif text == "caso":
             self.add_token(TokenType.CASO)
         else:

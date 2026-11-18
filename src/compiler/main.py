@@ -86,7 +86,7 @@ principal() {
 
     var y = numeros[0] + numeros[1];
 
-    mostrar(y);
+    quack!(y);
 }
     """
 

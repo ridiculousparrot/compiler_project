@@ -5,7 +5,7 @@ a = Analysis(
     ['ide_ludus.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('duck.png', '.'), ('ludus.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

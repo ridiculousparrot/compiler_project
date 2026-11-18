@@ -24,7 +24,8 @@ from src.parser.ast import (
     Quebrar,
     Vetor,
     principal,
-    AcessarVetor
+    AcessarVetor,
+    quack
 )
 
 
@@ -334,6 +335,9 @@ class Parser:
         if self.verificar_fim(TokenType.FUNCAO):
             return self.declaracao_funcao()
 
+        if self.verificar_fim(TokenType.QUACK):
+            return self.declaracao_quack()
+
         if self.verificar_fim(TokenType.TROCAR):
             return self.trocar_declaracao()
 
@@ -602,6 +606,13 @@ class Parser:
         self.costume(TokenType.CHAVES_DIREITO, "Esperado '}'.")
 
         return principal(Bloco(body))
+
+
+    def declaracao_quack(self):
+        self.costume(TokenType.QUACK, "Esperado print :)")
+        value = self.expressao()
+        self.costume(TokenType.PONTO_VIRGULA, "Esperado ';' depois da expressao.")
+        return quack(value)
 
     
 

@@ -192,3 +192,6 @@ class AcessarVetor():
     value: Expr
     index: Expr
 
+@dataclass(frozen=True)
+class quack(Declaracao):
+    expression: Expr

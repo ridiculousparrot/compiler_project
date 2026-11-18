@@ -6,6 +6,14 @@ import traceback
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
+# Pillow é opcional: com ele o pato fica mais nítido ao redimensionar.
+# Sem ele, o código usa apenas o tkinter (funciona do mesmo jeito).
+try:
+    from PIL import Image, ImageTk
+    PIL_OK = True
+except Exception:  # pragma: no cover
+    PIL_OK = False
+
 # ----------------------------------------------------------------------
 # Import dos módulos do compilador do usuário
 # ----------------------------------------------------------------------
@@ -49,6 +57,77 @@ PALAVRAS_CHAVE = [
 
 FONTE_EDITOR = ("Consolas", 12)
 FONTE_CONSOLE = ("Consolas", 10)
+
+
+# ----------------------------------------------------------------------
+# Easter egg: quack!  (pato animado via spritesheet)
+# ----------------------------------------------------------------------
+SENTINELA_PATO = "@@DUCK@@"
+
+# Configuração do spritesheet "duck.png" (grade de células 18x20 px,
+# onde CADA LINHA é uma animação diferente).
+#
+# Linhas disponíveis (0 = primeira linha):
+#   0  parado de frente (2 quadros)      9  andando pra esquerda (4)
+#   1  andando de lado  (6 quadros)     10  andando de lado, variação (7)
+#   4  coração          (2 quadros)     12  balançando de frente (4)
+#   5, 6, 7, 8  outras ações (3 cada)   13  andando de frente (7)
+DUCK_CELULA_L = 18          # largura de cada célula no spritesheet
+DUCK_CELULA_A = 20          # altura de cada célula no spritesheet
+DUCK_LINHA_ANIMACAO = 1     # qual linha do sheet usar como animação
+DUCK_ESCALA = 2             # ampliação inteira (2 = 36x40 px, 3 = 54x60 px)
+DUCK_DELAY_MS = 120         # tempo entre quadros (menor = mais rápido)
+
+
+def preparar_codigo(codigo):
+    """Troca quack!( por mostrar( e injeta um marcador antes da saída.
+    Mantém tudo na mesma linha, então a numeração de erros não muda."""
+    return re.sub(r'\bquack!\s*\(',
+                  f'mostrar("{SENTINELA_PATO}"); mostrar(', codigo)
+
+
+def carregar_frames_pato(caminho):
+    """Recorta UMA linha do spritesheet e devolve os quadros da animação."""
+    if not caminho or not os.path.exists(caminho):
+        return []
+
+    cl, ca = DUCK_CELULA_L, DUCK_CELULA_A
+    y0 = DUCK_LINHA_ANIMACAO * ca
+    frames = []
+    try:
+        if PIL_OK:
+            sheet = Image.open(caminho).convert("RGBA")
+            w, h = sheet.size
+            if y0 + ca > h:
+                print("DUCK_LINHA_ANIMACAO fora do spritesheet.")
+                return []
+            for c in range(w // cl):
+                quadro = sheet.crop((c * cl, y0, (c + 1) * cl, y0 + ca))
+                if quadro.getbbox() is None:      # célula vazia = fim da animação
+                    continue
+                quadro = quadro.resize((cl * DUCK_ESCALA, ca * DUCK_ESCALA),
+                                       Image.NEAREST)
+                frames.append(ImageTk.PhotoImage(quadro))
+        else:
+            src = tk.PhotoImage(file=caminho)
+            w, h = src.width(), src.height()
+            if y0 + ca > h:
+                print("DUCK_LINHA_ANIMACAO fora do spritesheet.")
+                return []
+            for c in range(w // cl):
+                dst = tk.PhotoImage(width=cl, height=ca)
+                dst.tk.call(dst, "copy", src, "-from",
+                            c * cl, y0, (c + 1) * cl, y0 + ca, "-to", 0, 0)
+                # descarta células totalmente transparentes
+                if not any(dst.transparency_get(x, y) is False
+                           for x in range(cl) for y in range(ca)):
+                    continue
+                frames.append(dst.zoom(DUCK_ESCALA) if DUCK_ESCALA > 1 else dst)
+    except Exception as e:
+        print(f"Não foi possível carregar duck.png: {e}")
+        return []
+
+    return frames
 
 
 # ----------------------------------------------------------------------
@@ -253,125 +332,49 @@ class EditorLudus(tk.Frame):
         self.texto.tag_configure("linha_erro", background="#5A1E1E")
 
     def _ao_pressionar(self, event):
-     """Gerencia chaves, parênteses e indentação automática."""
+        """Gerencia chaves, parênteses e indentação automática."""
 
-    # ---------------------------------------------------------
-    # ABRIR CHAVE
-    # ---------------------------------------------------------
-     if event.char == "{":
-        self.texto.insert("insert", "{}")
-        self.texto.mark_set("insert", "insert-1c")
-        return "break"
-
-    # ---------------------------------------------------------
-    # PARÊNTESES
-    # ---------------------------------------------------------
-     if event.char == "(":
-        self.texto.insert("insert", "()")
-        self.texto.mark_set("insert", "insert-1c")
-        return "break"
-
-    # ---------------------------------------------------------
-    # COLCHETES
-    # ---------------------------------------------------------
-     if event.char == "[":
-        self.texto.insert("insert", "[]")
-        self.texto.mark_set("insert", "insert-1c")
-        return "break"
-
-    # ---------------------------------------------------------
-    # ENTER
-    # ---------------------------------------------------------
-     if event.keysym == "Return":
-
-        linha_atual = self.texto.get(
-            "insert linestart",
-            "insert"
-        )
-
-        # Indentação atual
-        indentacao = re.match(r"\s*", linha_atual).group()
-
-        # Se terminou com {
-        if linha_atual.rstrip().endswith("{"):
-
-            nova_indentacao = indentacao + "    "
-
-            self.texto.insert(
-                "insert",
-                "\n" + nova_indentacao + "\n" + indentacao
-            )
-
-            # Coloca o cursor na linha interna
-            self.texto.mark_set(
-                "insert",
-                "insert-1line linestart"
-            )
-
+        # Abrir chave / parênteses / colchetes: fecha automaticamente
+        pares = {"{": "{}", "(": "()", "[": "[]"}
+        if event.char in pares:
+            self.texto.insert("insert", pares[event.char])
+            self.texto.mark_set("insert", "insert-1c")
             return "break"
 
-        # -----------------------------------------------------
-        # ENTER ANTES DE UMA CHAVE }
-        # -----------------------------------------------------
-        resto = self.texto.get(
-            "insert",
-            "insert lineend"
-        )
+        # ENTER
+        if event.keysym == "Return":
+            linha_atual = self.texto.get("insert linestart", "insert")
+            indentacao = re.match(r"\s*", linha_atual).group()
 
-        if resto.strip().startswith("}"):
+            # Linha terminou com {  -> abre bloco indentado
+            if linha_atual.rstrip().endswith("{"):
+                nova_indentacao = indentacao + "    "
+                self.texto.insert(
+                    "insert", "\n" + nova_indentacao + "\n" + indentacao)
+                self.texto.mark_set("insert", "insert-1line lineend")
+                return "break"
 
-            nova_indentacao = indentacao + "    "
+            # ENTER logo antes de um }
+            resto = self.texto.get("insert", "insert lineend")
+            if resto.strip().startswith("}"):
+                self.texto.insert("insert", "\n" + indentacao + "    ")
+                return "break"
 
-            self.texto.insert(
-                "insert",
-                "\n" + nova_indentacao
-            )
-
+            # ENTER normal: mantém a indentação
+            self.texto.insert("insert", "\n" + indentacao)
             return "break"
 
-        # -----------------------------------------------------
-        # ENTER NORMAL
-        # -----------------------------------------------------
-        self.texto.insert(
-            "insert",
-            "\n" + indentacao
-        )
+        # Fechar chave: reduz a indentação se a linha estiver vazia
+        if event.char == "}":
+            linha_atual = self.texto.get("insert linestart", "insert")
+            indentacao = re.match(r"\s*", linha_atual).group()
 
-        return "break"
+            if linha_atual.strip() == "" and len(indentacao) >= 4:
+                self.texto.delete("insert linestart", "insert")
+                self.texto.insert("insert", indentacao[:-4] + "}")
+                return "break"
 
-    # ---------------------------------------------------------
-    # FECHAR CHAVE
-    # ---------------------------------------------------------
-     if event.char == "}":
-
-        linha_atual = self.texto.get(
-            "insert linestart",
-            "insert"
-        )
-
-        # Pega a indentação atual
-        indentacao = re.match(r"\s*", linha_atual).group()
-
-        # Se a linha está vazia, reduz a indentação
-        if linha_atual.strip() == "" and len(indentacao) >= 4:
-
-            nova_indentacao = indentacao[:-4]
-
-            self.texto.delete(
-                "insert linestart",
-                "insert"
-            )
-
-            self.texto.insert(
-                "insert",
-                nova_indentacao + "}"
-            )
-
-            return "break"
-
-     return None
-
-
+        return None
 
     def _on_scroll_y(self, *args):
         self.texto.yview(*args)
@@ -407,6 +410,10 @@ class EditorLudus(tk.Frame):
         for m in re.finditer(palavras, conteudo):
             self._marcar(t, "keyword", m.start(), m.end())
 
+        # easter egg
+        for m in re.finditer(r'\bquack!', conteudo):
+            self._marcar(t, "keyword", m.start(), m.end())
+
         for m in re.finditer(r'//.*', conteudo):
             self._marcar(t, "comentario", m.start(), m.end())
         for m in re.finditer(r'##.*', conteudo):
@@ -437,7 +444,7 @@ class EditorLudus(tk.Frame):
 class ConsoleSaida(tk.Frame):
     """Console inferior estilo Dev-C++ (aba de compilação / execução)."""
 
-    def __init__(self, master):
+    def __init__(self, master, caminho_pato=None):
         super().__init__(master, bg=COR_CONSOLE_FUNDO)
         self.texto = tk.Text(
             self, bg=COR_CONSOLE_FUNDO, fg=COR_CONSOLE_TEXTO,
@@ -456,10 +463,18 @@ class ConsoleSaida(tk.Frame):
         self.texto.tag_configure("info", foreground="#9CDCFE")
         self.texto.tag_configure("normal", foreground=COR_CONSOLE_TEXTO)
 
+        # Animação do pato
+        self.frames_pato = carregar_frames_pato(caminho_pato)
+        self._patos = []          # nomes das imagens embutidas no Text
+        self._indice_frame = 0
+        self._anim_id = None
+
+    # ------------------------------------------------------------ texto
     def limpar(self):
         self.texto.configure(state="normal")
         self.texto.delete("1.0", "end")
         self.texto.configure(state="disabled")
+        self._patos.clear()       # o loop de animação para sozinho
 
     def escrever(self, msg, tag="normal"):
         self.texto.configure(state="normal")
@@ -467,18 +482,77 @@ class ConsoleSaida(tk.Frame):
         self.texto.see("end")
         self.texto.configure(state="disabled")
 
+    def escrever_com_pato(self, msg, tag="normal"):
+        """Escreve a linha com o patinho animado à esquerda."""
+        self.texto.configure(state="normal")
+        if self.frames_pato:
+            nome = self.texto.image_create(
+                "end", image=self.frames_pato[self._indice_frame],
+                padx=6, align="center")
+            self._patos.append(nome)
+            self._iniciar_animacao()
+        self.texto.insert("end", msg, tag)
+        self.texto.see("end")
+        self.texto.configure(state="disabled")
+
+    # -------------------------------------------------------- animação
+    def _iniciar_animacao(self):
+        if self._anim_id is None and len(self.frames_pato) > 1:
+            self._anim_id = self.after(DUCK_DELAY_MS, self._animar)
+
+    def _animar(self):
+        if not self._patos:
+            self._anim_id = None
+            return
+
+        self._indice_frame = (self._indice_frame + 1) % len(self.frames_pato)
+        quadro = self.frames_pato[self._indice_frame]
+
+        vivos = []
+        for nome in self._patos:
+            try:
+                self.texto.image_configure(nome, image=quadro)
+                vivos.append(nome)
+            except tk.TclError:   # imagem removida (console limpo)
+                pass
+        self._patos = vivos
+
+        self._anim_id = self.after(DUCK_DELAY_MS, self._animar)
+
 
 class _EscritorConsole(io.TextIOBase):
-    """Redireciona stdout (usado por `mostrar`/print) para o console."""
+    """Redireciona stdout (usado por `mostrar`) para o console,
+    tratando o marcador do pato."""
 
     def __init__(self, console, tag="normal"):
         self.console = console
         self.tag = tag
+        self.buffer = ""
+        self.pato_pendente = False
 
     def write(self, s):
-        if s:
-            self.console.escrever(s, self.tag)
+        if not s:
+            return 0
+        self.buffer += s
+        while "\n" in self.buffer:
+            linha, self.buffer = self.buffer.split("\n", 1)
+            self._processar(linha + "\n")
         return len(s)
+
+    def _processar(self, linha):
+        if linha.strip() == SENTINELA_PATO:
+            self.pato_pendente = True      # a próxima linha é do quack!
+            return
+        if self.pato_pendente:
+            self.console.escrever_com_pato(linha, self.tag)
+            self.pato_pendente = False
+        else:
+            self.console.escrever(linha, self.tag)
+
+    def finalizar(self):
+        if self.buffer:
+            self._processar(self.buffer)
+            self.buffer = ""
 
     def flush(self):
         pass
@@ -575,8 +649,6 @@ class IDELudus(tk.Tk):
 
 }
 """
-        
-
         self.editor.definir_codigo(exemplo)
 
     # ---------------------------------------------------------- ícone
@@ -592,10 +664,8 @@ class IDELudus(tk.Tk):
     def _carregar_icone(self):
         """Carrega o ícone da janela.
 
-        tk.PhotoImage NÃO suporta o formato .ico (só GIF/PGM/PPM/PNG), por
-        isso o ícone nunca aparecia. Para .ico o correto é usar
-        self.iconbitmap(), que só funciona no Windows. Em Linux/Mac,
-        tentamos primeiro um ludus.png (se existir) via iconphoto.
+        tk.PhotoImage NÃO suporta .ico; no Windows usamos iconbitmap().
+        Em Linux/Mac, usamos um ludus.png (se existir) via iconphoto.
         """
         caminho_ico = self.caminho_recurso("ludus.ico")
         caminho_png = self.caminho_recurso("ludus.png")
@@ -610,20 +680,15 @@ class IDELudus(tk.Tk):
                 else:
                     print(f"Ícone não encontrado: {caminho_ico}")
             else:
-                # Linux / macOS: PhotoImage não lê .ico
                 if os.path.exists(caminho_png):
                     self.icone_janela = tk.PhotoImage(file=caminho_png)
                     self.iconphoto(True, self.icone_janela)
-                elif os.path.exists(caminho_ico):
-                    # Última tentativa (pode falhar dependendo do Tk/tema)
-                    self.iconbitmap(f"@{caminho_ico}") if caminho_ico.endswith(".xbm") else None
+                else:
                     print(
                         "Aviso: em Linux/macOS use um 'ludus.png' junto do "
                         "script/executável para o ícone da janela aparecer "
                         "(arquivos .ico não são suportados aqui)."
                     )
-                else:
-                    print(f"Ícone não encontrado: {caminho_png}")
         except Exception as e:
             print(f"Não foi possível carregar o ícone: {e}")
 
@@ -702,7 +767,8 @@ class IDELudus(tk.Tk):
                                    anchor="w", bg="#D9E4F5",
                                    font=("Segoe UI", 9, "bold"))
         rotulo_console.pack(side="top", fill="x")
-        self.console = ConsoleSaida(painel_console)
+        self.console = ConsoleSaida(
+            painel_console, caminho_pato=self.caminho_recurso("duck.png"))
         self.console.pack(side="top", fill="both", expand=True)
         divisor.add(painel_console, stretch="always", minsize=120)
 
@@ -799,7 +865,7 @@ class IDELudus(tk.Tk):
 
         self.console.limpar()
         self.editor.texto.tag_remove("linha_erro", "1.0", "end")
-        codigo = self.editor.obter_codigo()
+        codigo = preparar_codigo(self.editor.obter_codigo())
         self._definir_status("Compilando...")
         self.console.escrever("== Compilando ==\n", "info")
 
@@ -823,7 +889,7 @@ class IDELudus(tk.Tk):
 
         self.console.limpar()
         self.editor.texto.tag_remove("linha_erro", "1.0", "end")
-        codigo = self.editor.obter_codigo()
+        codigo = preparar_codigo(self.editor.obter_codigo())
         self._definir_status("Executando...")
         self.console.escrever("== Executando ==\n", "info")
 
@@ -845,6 +911,7 @@ class IDELudus(tk.Tk):
             for stmt in statements:
                 resultado = interpretador.executar(stmt)
 
+            escritor.finalizar()
             sys.stdout = stdout_original
             if resultado is not None and hasattr(interpretador, "stringify"):
                 self.console.escrever(interpretador.stringify(resultado) + "\n", "normal")
@@ -852,6 +919,7 @@ class IDELudus(tk.Tk):
             self.console.escrever("\n== Execução concluída ==\n", "ok")
             self._definir_status("Execução concluída com sucesso.")
         except Exception as e:
+            escritor.finalizar()
             sys.stdout = stdout_original
             self._reportar_erro(e)
             self._definir_status("Erro durante a execução.")

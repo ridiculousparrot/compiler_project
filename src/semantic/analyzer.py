@@ -1,5 +1,5 @@
 from src.lexer.lexer import TokenType
-from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor, principal, AcessarVetor
+from src.parser.ast import Literal, Grouping, Unary, Binary, Print, Var, Faca_enquanto, Se, Enquanto, Bloco, retorno, ExpressaoStatement, Variable, Atribuicao, funcao, chamar, Quebrar, Trocar, Vetor, principal, AcessarVetor, quack                   
 
 class retornarException(Exception):
     def __init__(self, value):
@@ -148,6 +148,8 @@ class Interpretador:
             return self.visitarExpressaoStmt(stmt)
         if isinstance(stmt, Bloco):
             return self.visitar_bloco(stmt)
+        if isinstance(stmt, quack):
+            return self.visitarPrintStmt(stmt)
         if isinstance(stmt, funcao):
             return self.visitar_funcao(stmt)
         if isinstance(stmt, Trocar):
