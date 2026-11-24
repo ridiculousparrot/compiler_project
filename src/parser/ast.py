@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from abc import ABC 
+from abc import ABC
 from src.lexer.lexer import Token
 
-
-
-#EXPRESSOES 
+# EXPRESSOES
 
 
 # Classe base e abstrata para todas as expressões na árvore de sintaxe abstrata (AST).
@@ -41,21 +39,23 @@ class Grouping(Expr):
     # Expressão agrupada entre parênteses para definir precedência.
     expression: Expr
 
-#aqui e onde ao inves de realuzar a declaracao de variavel. passa a acessar ela atraves do nome
-#por isso justifica o IDENTIFIER como o nome de uma variavel e nao ela em si, papel do VAR
+
+# aqui e onde ao inves de realuzar a declaracao de variavel. passa a acessar ela atraves do nome
+# por isso justifica o IDENTIFIER como o nome de uma variavel e nao ela em si, papel do VAR
 @dataclass(frozen=True)
 class Variable(Expr):
-    name:Token
+    name: Token
 
-#atribuicao de variavel, ex:
-#x = 10
+
+# atribuicao de variavel, ex:
+# x = 10
 @dataclass(frozen=True)
 class Atribuicao(Expr):
     name: Token
     value: Expr
 
 
-#STATEMENTS E DECLARAÇÔES
+# STATEMENTS E DECLARAÇÔES
 
 
 # classe onde trataremos a statement, praticamente na arvore sintatica, as
@@ -64,13 +64,16 @@ class Atribuicao(Expr):
 class Declaracao(ABC):
     pass
 
+
 # Uma expressão usada como statement:
 #
 # x + 10;
 
+
 @dataclass(frozen=True)
 class ExpressaoStatement(Declaracao):
     expression: Expr
+
 
 # aqui ele pega o valor da expressao e faz alguma coisa
 
@@ -90,37 +93,44 @@ class ExpressaoStatement(Declaracao):
 # neste ponto, a declaracao e adicionada varivavel como filho percetencte a familha
 # expressao produz valor
 
-#printa na tela print;
+# printa na tela print;
+
 
 @dataclass(frozen=True)
 class Print(Declaracao):
     expression: Expr
-#arquiteura na arvore sintatica para sua declaracao no token lexer
-#Se
-#├── condition
-#│   └── x > 10
-#│
-#├── entao
-#│   └── print "maior"
-#│
-#└── senao
+
+
+# arquiteura na arvore sintatica para sua declaracao no token lexer
+# Se
+# ├── condition
+# │   └── x > 10
+# │
+# ├── entao
+# │   └── print "maior"
+# │
+# └── senao
 #    └── print "menor"
 
 
-#declaracao de variavel 
-#var x = 10;
+# declaracao de variavel
+# var x = 10;
 @dataclass(frozen=True)
 class Var(Declaracao):
     name: Token
-    #incializador da valor inicial a uma variavel, caso nao seja declarado, o valor da variavel sera None
+    # incializador da valor inicial a uma variavel, caso nao seja declarado, o valor da variavel sera None
     initializer: Expr | None
+
 
 ##(aviso) nao e apenas um no na AST, mas sim apenas uma regra gramatical.
 # AST continua organizada em STMT
 
+
 @dataclass(frozen=True)
 class Bloco(Declaracao):
     statements: list[Declaracao]
+
+
 # Bloco:
 #
 # {
@@ -128,59 +138,72 @@ class Bloco(Declaracao):
 #     var y = 20;
 # }
 
+
 @dataclass(frozen=True)
 class Se(Declaracao):
     condition: Expr
     entao: Declaracao
-    senao : Declaracao | None
+    senao: Declaracao | None
+
 
 # bloco se e senao
+
 
 @dataclass(frozen=True)
 class Enquanto(Declaracao):
     condition: Expr
     body: Declaracao
-#bloco de while (nesse caso apenas o uso do while isolado)
 
-#bloco do do e while, agora com a condicao no final, diferente do while que tem a condicao no inicio)
+
+# bloco de while (nesse caso apenas o uso do while isolado)
+
+
+# bloco do do e while, agora com a condicao no final, diferente do while que tem a condicao no inicio)
 @dataclass(frozen=True)
 class Faca_enquanto(Declaracao):
     body: Declaracao
     condition: Expr
 
-#uma funcao em programacao significa um bloco de código que realiza uma tarefa específica e pode ser reutilizado em diferentes partes do programa. 
-#a classe funcao representa a declaracao de uma funcao, corpo, nome e lista de parametros, que podem ser passados de funcao para funcao
+
+# uma funcao em programacao significa um bloco de código que realiza uma tarefa específica e pode ser reutilizado em diferentes partes do programa.
+# a classe funcao representa a declaracao de uma funcao, corpo, nome e lista de parametros, que podem ser passados de funcao para funcao
 @dataclass(frozen=True)
 class funcao(Declaracao):
-      body: Bloco
-      name: Token
-      parametros: list
+    body: Bloco
+    name: Token
+    parametros: list
 
-#retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor
+
+# retorno de uma funcao que pode ser none caso a expressao digitada nao tenha valor
 @dataclass(frozen=True)
 class retorno(Declaracao):
-      value: Expr | None
-    
+    value: Expr | None
 
-#STATEMENTS DE VARIAVEIS GLOBAIS E LOCAIS
+
+# STATEMENTS DE VARIAVEIS GLOBAIS E LOCAIS
 #####CHAMADA `PARA REPRESENTAR UMA EXPRESSAO DE CHAMADA DE FUNCAO`
 @dataclass(frozen=True)
-class chamar():
-    callee:Expr### E UMA EXPR< PODEMOS CHAMAR O RESULTADO DE OUTRA EXPRESSAO
-    paren: Token ## GUARDA TOKEN ) PARA TER A LINHA CRETA AO LANCAR ERRO DE ARGUMENTOS
-    argumentos: list #### LISTA DE EXPR CADA UMA SENDO VALOR PASSADO
+class chamar(Expr):
+    callee: Expr  ### E UMA EXPR< PODEMOS CHAMAR O RESULTADO DE OUTRA EXPRESSAO
+    paren: Token  ## GUARDA TOKEN ) PARA TER A LINHA CRETA AO LANCAR ERRO DE ARGUMENTOS
+    argumentos: list  #### LISTA DE EXPR CADA UMA SENDO VALOR PASSADO
 
-@dataclass(frozen= True)
+
+@dataclass(frozen=True)
 class Trocar(Declaracao):
     condition: Expr
     casos: list
 
-@dataclass(frozen= True)
+
+@dataclass(frozen=True)
 class Quebrar(Declaracao):
     pass
+
+
 @dataclass(frozen=True)
 class Vetor(Declaracao):
-    elements:list
+    elements: list
+
 
 @dataclass(frozen=True)
 class principal(Declaracao):
@@ -188,9 +211,10 @@ class principal(Declaracao):
 
 
 @dataclass(frozen=True)
-class AcessarVetor():
+class AcessarVetor(Expr):
     value: Expr
     index: Expr
+
 
 @dataclass(frozen=True)
 class quack(Declaracao):

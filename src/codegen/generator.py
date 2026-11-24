@@ -1,6 +1,33 @@
-from src.parser.ast import Bloco, Faca_enquanto, Se, Var, Variable, funcao, Enquanto, Declaracao, Binary, Unary, Literal, Grouping, Atribuicao, Declaracao, ExpressaoStatement, Print, retorno, Trocar, quack, principal, Vetor, Quebrar, AcessarVetor, chamar
+from src.parser.ast import (
+    Bloco,
+    Faca_enquanto,
+    Se,
+    Var,
+    Variable,
+    funcao,
+    Enquanto,
+    Declaracao,
+    Binary,
+    Unary,
+    Literal,
+    Grouping,
+    Atribuicao,
+    Declaracao,
+    ExpressaoStatement,
+    Print,
+    retorno,
+    Trocar,
+    quack,
+    principal,
+    Vetor,
+    Quebrar,
+    AcessarVetor,
+    chamar,
+)
+
 ##gerador de codigo, vai chamar todas as classes da AST com regras de parser, e retornar os valores na tela, vai instanciar junto dando o no e retornando valores no gerador de codigo transmitindo os passos paraa  maquina virtual
 ##Teste das expressoes em teste_gerador.py
+
 
 class codegen:
     ###INFRAESTRUTURA DO CODEGEN!!
@@ -8,6 +35,7 @@ class codegen:
     def __init__(self):
         self.codigo = []
         self.contador = 0
+        self.fim_do_laco = []
 
     def novo_contador(self):
         label = f"L{self.contador}"
@@ -15,17 +43,17 @@ class codegen:
         return label
 
     def identificar_contador(self, label):
-        self.codigo.append(F"{label}:\n")
-##emissao de argumentos em funcao da instrucso
+        self.codigo.append(f"{label}:\n")
+
+    ##emissao de argumentos em funcao da instrucso
     def emit(self, instrucao, argumentos=None):
         if argumentos is not None:
             self.codigo.append(f"{instrucao} {argumentos}\n")
         else:
             self.codigo.append(f"{instrucao}\n")
 
-
-##respostas de retorno do codigo gerado
-#vai chamar e isntanciar cada no da AST com a funcao de geracao do codigo, sempre com os valores dos nos da AST 
+    ##respostas de retorno do codigo gerado
+    # vai chamar e isntanciar cada no da AST com a funcao de geracao do codigo, sempre com os valores dos nos da AST
     def gerar_resposta(self, no):
 
         if isinstance(no, Binary):
@@ -33,7 +61,7 @@ class codegen:
 
         if isinstance(no, Unary):
             return self.gerar_unario(no)
-        
+
         if isinstance(no, Literal):
 
             return self.gerar_literal(no)
@@ -47,10 +75,9 @@ class codegen:
         if isinstance(no, Atribuicao):
             return self.gerar_atribuicao(no)
 
-
         if isinstance(no, ExpressaoStatement):
             return self.gerar_expressaostatement(no)
-        
+
         if isinstance(no, chamar):
             return self.gerar_chamar(no)
 
@@ -84,10 +111,10 @@ class codegen:
         if isinstance(no, Trocar):
             return self.gerar_trocar(no)
 
-       ## if isinstance(no, Trocar):
-         #   for elemento in no:
-          #      self.gerar_resposta(elemento)
-           # return  
+        ## if isinstance(no, Trocar):
+        #   for elemento in no:
+        #      self.gerar_resposta(elemento)
+        # return
 
         if isinstance(no, quack):
             return self.gerar_quack(no)
@@ -106,10 +133,11 @@ class codegen:
 
         raise TypeError(f"No nao suportado: {type(no).__name__}")
 
-#+, -, *, /, =, ==, !=, >, >=. <=, !=
+    # +, -, *, /, =, ==, !=, >, >=. <=, !=
 
-##Geração das funcoes de reposta, no caso com expressoes binarias as operações 
-#  
+    ##Geração das funcoes de reposta, no caso com expressoes binarias as operações
+    #
+
     def gerar_binary(self, no):
 
         self.gerar_resposta(no.left)
@@ -126,36 +154,32 @@ class codegen:
             "=": "IGUAL_OUTRO",
             "==": "IGUAL_IGUAL",
             ">": "MAIOR",
-            "<": "MENOR"
+            "<": "MENOR",
         }
 
-##pega as operações e verifica se ha operações com base na leitura do codigo antes de retornar
-## ao gerador, se nao tiver operador, reotrna raise
+        ##pega as operações e verifica se ha operações com base na leitura do codigo antes de retornar
+        ## ao gerador, se nao tiver operador, reotrna raise
         instrucao = operacoes.get(no.operator.lexeme)
         if instrucao is None:
-            raise ValueError(F"operador desconhecido {no.operator}")
+            raise ValueError(f"operador desconhecido {no.operator}")
 
         self.emit(instrucao)
 
         return no
 
- ##outras funcoes de geracao de codigo       
+    ##outras funcoes de geracao de codigo
     def gerar_unario(self, no):
         self.gerar_resposta(no.right)
 
-        operacoes = {
-            "-": "NEGATE",
-            "!": "NOT"
-                }
-        
+        operacoes = {"-": "NEGATE", "!": "NOT"}
+
         ##pega as operações e verifica se ha operações com base na leitura do codigo antes de retornar
         ## ao gerador, se nao tiver operador, reotrna raise
         instrucao = operacoes.get(no.operator.lexeme)
         if instrucao is None:
-                    raise ValueError(F"operador desconhecido {no.operator}")
-        
-        self.emit(instrucao)
+            raise ValueError(f"operador desconhecido {no.operator}")
 
+        self.emit(instrucao)
 
     def gerar_literal(self, no):
         if isinstance(no.value, str):
@@ -163,12 +187,11 @@ class codegen:
         else:
             self.emit("NUMBER", no.value)
 
-
     def gerar_grouping(self, no):
         self.gerar_resposta(no.expression)
 
     def gerar_variable(self, no):
-        self.emit("LOAD", no.name.lexeme )
+        self.emit("LOAD", no.name.lexeme)
 
     def gerar_atribuicao(self, no):
         self.gerar_resposta(no.value)
@@ -185,6 +208,10 @@ class codegen:
         self.gerar_resposta(no.expression)
         self.emit("PRINT")
 
+    def gerar_quack(self, no):
+        self.gerar_resposta(no.expression)
+        self.emit("QUACK")
+
     def gerar_var(self, no):
         if no.initializer is None:
             self.emit("NONE")
@@ -192,7 +219,6 @@ class codegen:
             self.gerar_resposta(no.initializer)
 
         self.emit("DECLARE", no.name.lexeme)
-
 
     def gerar_bloco(self, no):
         self.emit("BLOC_BEGIN")
@@ -218,18 +244,31 @@ class codegen:
         self.identificar_contador(fim)
 
     def gerar_enquanto(self, no):
-        self.emit("ENQUANTO")
-        self.gerar_resposta(no.condition)
-        self.gerar_resposta(no.body)
-        self.emit("END_ENQUANTO")
+        ini = self.novo_contador()
+        fim = self.novo_contador()
+        self.fim_do_laco.append(fim)
 
-    def gerar_faca_enquanto(self,no):
-        self.emit("FACA")
-        self.gerar_resposta(no.body)
-        self.emit("ENQUANTO")
+        self.identificar_contador(ini)
         self.gerar_resposta(no.condition)
-        self.emit("END_FACA_ENQUANTO")
-        
+        self.emit("JUMP_IF_FALSE", fim)
+        self.gerar_resposta(no.body)
+        self.emit("JUMP", ini)
+        self.identificar_contador(fim)
+
+        self.fim_do_laco.pop()
+
+    def gerar_faca_enquanto(self, no):
+        ini = self.novo_contador()
+        fim = self.novo_contador()
+        self.fim_do_laco.append(fim)
+
+        self.identificar_contador(ini)
+        self.gerar_resposta(no.body)
+        self.gerar_resposta(no.condition)
+        self.emit("JUMP_IF_TRUE", ini)
+        self.identificar_contador(fim)
+
+        self.fim_do_laco.pop()
 
     def gerar_funcao(self, no):
         self.emit("FUNCTION", no.name.lexeme)
@@ -239,7 +278,7 @@ class codegen:
 
         self.emit("END_FUNCTION")
 
-    def gerar_retorno (self, no):
+    def gerar_retorno(self, no):
         if no.value is not None:
             self.gerar_resposta(no.value)
         self.emit("RETURN")
@@ -250,20 +289,33 @@ class codegen:
         for argumentos in no.argumentos:
             self.gerar_resposta(argumentos)
         self.emit("END_CALL")
-        
 
     def gerar_trocar(self, no):
-        self.emit("TROCAR")
-        self.gerar_resposta(no.condition)
+        fim = self.novo_contador()
+        self.fim_do_laco.append(fim)
 
-        for elemento in no.casos:
-            self.gerar_resposta(elemento)
+        for caso in no.casos:
+            proximo = self.novo_contador()
 
-        self.emit("END_TROCAR")            
-            
+            if caso.value is not None:
+                self.gerar_resposta(no.condition)
+                self.gerar_resposta(caso.value)
+                self.emit("IGUAL_IGUAL")
+                self.emit("JUMP_IF_FALSE", proximo)
+
+            for stmt in caso.body:
+                self.gerar_resposta(stmt)
+
+            self.emit("JUMP", fim)
+            self.identificar_contador(proximo)
+
+        self.identificar_contador(fim)
+        self.fim_do_laco.pop()
 
     def gerar_quebrar(self, no):
-        self.emit("QUEBRAR")
+        if not self.fim_do_laco:
+            raise SyntaxError("'quebrar' fora de laço ou trocar")
+        self.emit("JUMP", self.fim_do_laco[-1])
 
     def gerar_vetor(self, no):
         for elementos in no.elements:
@@ -274,10 +326,10 @@ class codegen:
         self.gerar_resposta(no.value)
         self.gerar_resposta(no.index)
         self.emit("VEC_VALOR")
-            
+
     def gerar_principal(self, no):
         self.emit("PRINCIPAL")
         corpo = no.body
         self.gerar_resposta(corpo)
 
-        return 
+        return
